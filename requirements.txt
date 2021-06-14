@@ -1,0 +1,12 @@
+# Our own requirements
+geoalchemy2
+h3
+jupyterlab
+pandas
+psycopg2-binary
+
+# Our GIS tools
+git+https://github.com/GispoCoding/ipygis.git
+
+# GISPO style
+git+https://github.com/GispoCoding/jupyter-themes.git
