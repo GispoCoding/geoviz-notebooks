@@ -1,4 +1,5 @@
 # Our own requirements
+flickrapi
 geoalchemy2
 h3
 jupyterlab
