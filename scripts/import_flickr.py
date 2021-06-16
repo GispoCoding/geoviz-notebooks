@@ -88,7 +88,7 @@ for year in years_list:
             max_taken_date = str(year) + '-' + str(month) + '-' + str(day) + ' 23:59:59'
 
             # Connect to Flickr
-            flickr = FlickrAPI(key, secret, format='parsed-json')
+            flickr = FlickrAPI(flickr_api_key, flickr_secret, format='parsed-json')
 
             # Page count
             i = 1
