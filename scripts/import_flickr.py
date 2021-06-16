@@ -32,5 +32,6 @@ for point in points_to_import:
     # use dict, since the json may contain the same image twice!
     print(f"Image {pid} found twice, overwriting")
     flickr_points[pid] = FlickrPoint(point_id=pid, properties=point, geom=geom)
+print(f"Saving {len(flickr_points)} flickr points...")
 session.bulk_save_objects(flickr_points.values())
 session.commit()
