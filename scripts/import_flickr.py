@@ -1,18 +1,14 @@
 import calendar
-import json
 import os
 import sys
 import time
 from flickrapi import FlickrAPI
-import pandas as pd
-from io import StringIO
 from dotenv import load_dotenv
 from ipygis import get_connection_url
 from shapely.geometry import Point
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from geoalchemy2.shape import from_shape
-
 
 
 # save api key to env variable if found
