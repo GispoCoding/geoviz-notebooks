@@ -4,6 +4,7 @@ h3
 jupyterlab
 pandas
 psycopg2-binary
+python-dotenv
 
 # Our GIS tools
 git+https://github.com/GispoCoding/ipygis.git

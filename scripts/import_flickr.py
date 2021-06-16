@@ -1,10 +1,15 @@
 import json
+import os
 import sys
+from dotenv import load_dotenv
 from ipygis import get_connection_url
 from shapely.geometry import Point
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from geoalchemy2.shape import from_shape
+
+# save api key to env variable if found
+load_dotenv()
 
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
@@ -15,6 +20,7 @@ engine = create_engine(sql_url)
 session = sessionmaker(bind=engine)()
 FlickrPoint.__table__.create(engine, checkfirst=True)
 
+flickr_api_key = os.getenv("FLICKR_API_KEY")
 # TODO: run the import here instead of reading json file
 json_file = open("flickr_HEL_comp_2020.json", "r")
 points_to_import = json.load(json_file)
