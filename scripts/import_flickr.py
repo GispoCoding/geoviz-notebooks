@@ -28,7 +28,7 @@ flickr_points = {}
 print("Reading points to import...")
 for point in points_to_import:
     pid = point.pop("id")
-    geom = from_shape(Point(float(point.pop("latitude")), float(point.pop("longitude"))), srid=4326)
+    geom = from_shape(Point(float(point.pop("longitude")), float(point.pop("latitude"))), srid=4326)
     # use dict, since the json may contain the same image twice!
     print(f"Image {pid} found twice, overwriting")
     flickr_points[pid] = FlickrPoint(point_id=pid, properties=point, geom=geom)
