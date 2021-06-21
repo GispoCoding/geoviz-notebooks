@@ -2,7 +2,7 @@ import calendar
 import os
 import sys
 import time
-from flickrapi import FlickrAPI
+from flickrapi import FlickrAPI, FlickrError
 from dotenv import load_dotenv
 from ipygis import get_connection_url
 from shapely.geometry import Point
@@ -86,56 +86,56 @@ for year in years_list:
             # Connect to Flickr
             flickr = FlickrAPI(flickr_api_key, flickr_secret, format='parsed-json')
 
-            # Page count
-            i = 1
-            
+            page = 1            
             # While loop to generate requests
             while True:
-            
+                # Protect api key (limit amount of queries)
+                if q_count > 3500:
+                    raise AssertionError("Over 3500 queries done! Stopping to protect API key.")
                 print('      query: '+str(q_count))
 
                 # Wait time to avoid errors
                 time.sleep(0.1)
 
-                result = flickr.photos.search(
-                    per_page = 400,             # Number of data per page
-                    has_geo = 1,                # Get photos with geolocation
-                    min_taken_date = min_taken_date, 
-                    max_taken_date = max_taken_date,
-                    bbox = total_bbox,          # Specify geographical extent
-                    media = 'photos',           # Photos without video
-                    sort = 'date-taken-desc',   # Photos from latest
-                    privacy_filter =1,          # Public photos
-                    safe_search = 1,            # photos without violence
-                    extras = 'geo,url_n, date_taken, views, license',
-                    page = i
-                )
+                try:
+                    result = flickr.photos.search(
+                        per_page = 400,             # Number of data per page
+                        has_geo = 1,                # Get photos with geolocation
+                        min_taken_date = min_taken_date, 
+                        max_taken_date = max_taken_date,
+                        bbox = total_bbox,          # Specify geographical extent
+                        media = 'photos',           # Photos without video
+                        sort = 'date-taken-desc',   # Photos from latest
+                        privacy_filter =1,          # Public photos
+                        safe_search = 1,            # photos without violence
+                        extras = 'geo,url_n, date_taken, views, license',
+                        page = page
+                    )
+                except FlickrError as e:
+                    print(f"      Flickr API returned an error: {e}. Trying next request.")
+                    q_count += 1
+                    break
 
                 q_count += 1
 
-                # Export result
-                j = result['photos']
-                print('        total_photos:', j['total'])
-                print('        current_pages:', i)
-                photos += j['photo']
+                # Add result
+                photos_to_add = result['photos']
+                print('        total_photos:', photos_to_add['total'])
+                print('        current_pages:', page)
+                photos += photos_to_add['photo']
 
                 # Check for query size limit (10 x 400 = 4000)
-                if i > 10 :
-                    print('Query has exceeded the limit of 4000 photos ' + str(i))
+                if page > 10 :
+                    print("      Query has exceeded the limit of 4000 photos")
                     break
-                
                 # Break when done
-                elif i >= j['pages']:
+                elif page >= photos_to_add['pages']:
                     break
-                
-                i += 1
+                page += 1
 
-                # Protect api key (limit amount of queries)
-                if q_count > 3500:
-                    raise AssertionError('over 3500 queries!')
 
 flickr_points = {}
-print("Reading points to import...")
+print(f"Found {len(photos)} flickr photos, importing...")
 for point in photos:
     pid = point.pop("id")
     geom = from_shape(Point(float(point.pop("longitude")), float(point.pop("latitude"))), srid=4326)
