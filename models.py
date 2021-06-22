@@ -23,8 +23,17 @@ class OSMPolygon(Base):
     geom = Column(Geometry)
 
 
+# Use JSONB field for all datasets so we won't need migrations in the future
+
 class FlickrPoint(Base):
     __tablename__ = 'flickrpoints'
     point_id = Column(BigInteger, primary_key=True)
+    properties = Column(JSONB)
+    geom = Column(Geometry)
+
+
+class GTFSStop(Base):
+    __tablename__ = 'gtfsstops'
+    stop_id = Column(BigInteger, primary_key=True)
     properties = Column(JSONB)
     geom = Column(Geometry)

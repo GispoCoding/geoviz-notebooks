@@ -140,7 +140,8 @@ for point in photos:
     pid = point.pop("id")
     geom = from_shape(Point(float(point.pop("longitude")), float(point.pop("latitude"))), srid=4326)
     # use dict, since the json may contain the same image twice!
-    print(f"Image {pid} found twice, overwriting")
+    if pid in flickr_points:
+        print(f"Image {pid} found twice, overwriting")
     flickr_points[pid] = FlickrPoint(point_id=pid, properties=point, geom=geom)
 print(f"Saving {len(flickr_points)} flickr points...")
 session.bulk_save_objects(flickr_points.values())

@@ -1,6 +1,7 @@
 # Our own requirements
 flickrapi
 geoalchemy2
+gtfs-functions
 h3
 jupyterlab
 pandas
