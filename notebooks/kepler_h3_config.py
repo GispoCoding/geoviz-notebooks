@@ -164,7 +164,7 @@ config = {
             },
             "visualChannels": {
               "colorField": {
-                "name": "count",
+                "name": "size",
                 "type": "integer"
               },
               "colorScale": "quantize",
@@ -180,7 +180,7 @@ config = {
             "fieldsToShow": {
               "data_1": [
                 {
-                  "name": "count",
+                  "name": "size",
                   "format": None
                 },
                 {
