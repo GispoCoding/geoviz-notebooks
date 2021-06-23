@@ -37,3 +37,13 @@ class GTFSStop(Base):
     stop_id = Column(BigInteger, primary_key=True)
     properties = Column(JSONB)
     geom = Column(Geometry)
+
+
+# We usually have a completely different (denser) dataset of nodes for local
+# accessibility. Makes no sense to save them in the same table as the OSM POIs.
+
+class OSMAccessNode(Base):
+    __tablename__ = 'osmaccessnodes'
+    node_id = Column(BigInteger, primary_key=True)
+    accessibilities = Column(JSONB)
+    geom = Column(Geometry)

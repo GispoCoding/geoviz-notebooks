@@ -4,6 +4,8 @@ geoalchemy2
 gtfs-functions
 h3
 jupyterlab
+osmnx
+pandana
 pandas
 psycopg2-binary
 python-dotenv
