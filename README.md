@@ -16,6 +16,9 @@ pyenv local miniconda-latest
 pip install -r requirements.txt
 ```
 
+If you wish to import data from the Flickr API, fill in your Flickr api key and secret
+in the `.env` file or the corresponding environment variable.
+
 Then, you may import all datasets for any city with a single command
 
 ```
