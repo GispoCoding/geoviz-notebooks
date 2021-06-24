@@ -3,6 +3,7 @@
 ## Requirements
 
 * Python >= 3.8
+* [Osm2pgsql](https://osm2pgsql.org/doc/install.html)
 * PostGIS accepting connections at localhost:5432
 
 ## How to get started
