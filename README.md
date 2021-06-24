@@ -3,6 +3,7 @@
 ## Requirements
 
 * Python >= 3.8
+* [Osm2pgsql](https://osm2pgsql.org/doc/install.html)
 * PostGIS accepting connections at localhost:5432
 
 ## How to get started
@@ -29,7 +30,7 @@ or any other city. You may also import single datasets by separately running any
 inside the scripts directory.
 
 Do note that cities in bigger countries will be slower to import, since currently we download
-the OSM data for the entire country.
+the OSM data for the entire country. All other dataset sizes are determined by the size of the city.
 
 Also, GTFS dataset location will have to be added manually in `scripts/import_gtfs.py`
 `GTFS_DATASETS` variable, if you need GTFS datasets from cities other than Helsinki, Copenhagen
