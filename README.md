@@ -32,6 +32,10 @@ inside the scripts directory.
 Do note that cities in bigger countries will be slower to import, since currently we download
 the OSM data for the entire country. All other dataset sizes are determined by the size of the city.
 
-Also, GTFS dataset location will have to be added manually in `scripts/import_gtfs.py`
-`GTFS_DATASETS` variable, if you need GTFS datasets from cities other than Helsinki, Copenhagen
-or Warsaw. Feel free to make a PR to add lots of fancy GTFS URLs there!
+If the city you want to import does not have a GTFS feed URL in `scripts/import_gtfs.py`
+`GTFS_DATASETS` variable, you may add the right URL manually there (please make a PR too), or
+alternatively run the import with the right URL as parameter, e.g.
+
+```
+python ./import.py Tallinn --gtfs https://transitfeeds.com/p/maanteeamet/510/latest/download
+```
