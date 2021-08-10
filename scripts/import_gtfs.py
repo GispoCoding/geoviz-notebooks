@@ -16,15 +16,19 @@ GTFS_DATASETS = {
     "Helsinki": "https://transitfeeds.com/p/helsinki-regional-transport/735/latest/download",
     "Warsaw": "https://transitfeeds.com/p/ztm-warszawa/720/latest/download",
     "Copenhagen": "https://transitfeeds.com/p/rejseplanen/705/latest/download",
+    "Tallinn": "https://transitfeeds.com/p/maanteeamet/510/latest/download",
 }
 
 
 class GTFSImporter(object):
-    def __init__(self, city: str):
-        if not city:
-            raise AssertionError("You must specify a city.")
-        self.city = city
-        self.url = GTFS_DATASETS.get(city, None)
+    def __init__(self, city: str, url: str):
+        if not city and not url:
+            raise AssertionError("You must specify a city or GTFS feed url.")
+        if url:
+            self.url = url
+        else:
+            self.city = city
+            self.url = GTFS_DATASETS.get(city, None)
 
         sql_url = get_connection_url(dbname="geoviz")
         engine = create_engine(sql_url)
@@ -33,7 +37,7 @@ class GTFSImporter(object):
 
     def run(self):
         if not self.url:
-            print(f"GTFS data not found for {city}, skipping.")
+            print(f"GTFS data not found for {self.city}, skipping.")
             return
         print("Downloading gtfs zip...")
         response = requests.get(self.url, allow_redirects=True)
@@ -65,9 +69,11 @@ class GTFSImporter(object):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Import GTFS data for given city")
-    parser.add_argument("-city", default="HEL", help="City to import")
+    parser = argparse.ArgumentParser(description="Import GTFS data for given city or URL")
+    parser.add_argument("--city", default="Helsinki", help="City to import")
+    parser.add_argument("--url", default=None, help="GTFS url to import")
     args = vars(parser.parse_args())
-    city = args["city"]
-    importer = GTFSImporter(city=city)
+    city = args.get("city", None)
+    url = args.get("url", None)
+    importer = GTFSImporter(city=city, url=url)
     importer.run()
