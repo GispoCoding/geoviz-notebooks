@@ -13,14 +13,14 @@ class OSMPoint(Base):
     __tablename__ = 'osmpoints'
     node_id = Column(BigInteger, primary_key=True)
     tags = Column(JSONB)
-    geom = Column(Geometry)
+    geom = Column(Geometry(geometry_type='POINT'))
 
 
 class OSMPolygon(Base):
     __tablename__ = 'osmpolygons'
     area_id = Column(BigInteger, primary_key=True)
     tags = Column(JSONB)
-    geom = Column(Geometry)
+    geom = Column(Geometry(geometry_type='POLYGON'))
 
 
 # Use JSONB field for all datasets so we won't need migrations in the future
@@ -29,14 +29,14 @@ class FlickrPoint(Base):
     __tablename__ = 'flickrpoints'
     point_id = Column(BigInteger, primary_key=True)
     properties = Column(JSONB)
-    geom = Column(Geometry)
+    geom = Column(Geometry(geometry_type='POINT'))
 
 
 class GTFSStop(Base):
     __tablename__ = 'gtfsstops'
     stop_id = Column(BigInteger, primary_key=True)
     properties = Column(JSONB)
-    geom = Column(Geometry)
+    geom = Column(Geometry(geometry_type='POINT'))
 
 
 # We usually have a completely different (denser) dataset of nodes for local
@@ -46,4 +46,4 @@ class OSMAccessNode(Base):
     __tablename__ = 'osmaccessnodes'
     node_id = Column(BigInteger, primary_key=True)
     accessibilities = Column(JSONB)
-    geom = Column(Geometry)
+    geom = Column(Geometry(geometry_type='POINT'))
