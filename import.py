@@ -18,8 +18,10 @@ CONTINENTS = [
 
 parser = argparse.ArgumentParser(description="Import all datasets for a given city")
 parser.add_argument("city", default="Helsinki", help="City data to import")
+parser.add_argument("--gtfs", help="Optional GTFS feed URL")
 args = vars(parser.parse_args())
 city = args["city"]
+gtfs_url = args.get("gtfs_url", None)
 print(f"--- Importing all datasets for {city} ---")
 
 # Get bbox, centroid and country for the city
@@ -60,8 +62,13 @@ flick_importer = FlickrImporter(
 )
 flick_importer.run()
 
-print(f"--- Importing GTFS data for {city} ---")
-gtfs_importer = GTFSImporter(city=city)
+# GTFS importer uses the provided URL or, failing that, default values for some cities
+if gtfs_url:
+    print(f"--- Importing GTFS data from {gtfs_url} ---")
+    gtfs_importer = GTFSImporter(url=gtfs_url)
+else:
+    print(f"--- Importing GTFS data for {city} ---")
+    gtfs_importer = GTFSImporter(city=city)
 gtfs_importer.run()
 
 print(f"--- Importing OSM walkability & accessibility data for {city} ---")
