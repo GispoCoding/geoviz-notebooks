@@ -106,7 +106,7 @@ class AccessibilityImporter(object):
         # Get amentities from place/bbox
         if ignore_geocoding is True:
             amenities = ox.geometries.geometries_from_bbox(
-                maxy, miny, maxx, minx, tags=tags
+                self.maxy, self.miny, self.maxx, self.minx, tags=tags
             )
         else:
             amenities = ox.geometries.geometries_from_place(cityname, tags=tags)
