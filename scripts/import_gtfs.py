@@ -18,6 +18,15 @@ GTFS_DATASETS = {
     "Warsaw": "https://transitfeeds.com/p/ztm-warszawa/720/latest/download",
     "Copenhagen": "https://transitfeeds.com/p/rejseplanen/705/latest/download",
     "Tallinn": "https://transitfeeds.com/p/maanteeamet/510/latest/download",
+    "Stockholm": "https://transitfeeds.com/p/storstockholms-lokaltrafik/1086/latest/download",
+    "St. Petersburg": "https://transitfeeds.com/p/saint-petersburg/826/latest/download",
+    "Oslo": "https://transitfeeds.com/p/norsk-reiseinformasjon-as/791/latest/download",
+    "Riga": "https://transitfeeds.com/p/rigas-satiksme/333/latest/download",
+    "Berlin": "https://transitfeeds.com/p/verkehrsverbund-berlin-brandenburg/213/latest/download",
+    "Hamburg": "https://transitfeeds.com/p/hamburger-verkehrsverbund-gmbh/1010/latest/download",
+    "Munich": "https://transitfeeds.com/p/m-nchner-verkehrs-und-tarifverbund/1132/latest/download",
+    "Amsterdam": "https://transitfeeds.com/p/ov/814/latest/download",
+    "Vienna": "https://transitfeeds.com/p/stadt-wien/888/latest/download",
 }
 
 
