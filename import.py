@@ -1,6 +1,7 @@
 import argparse
 import os
 import requests
+from dotenv import load_dotenv
 from scripts.import_flickr import FlickrImporter
 from scripts.import_gtfs import GTFSImporter
 from scripts.import_osm_accessibility import AccessibilityImporter
@@ -15,6 +16,8 @@ CONTINENTS = [
     "australia-oceania",
     "antarctica",
 ]
+load_dotenv()
+osm_extracts_api_key = os.getenv("OSM_EXTRACTS_API_KEY")
 
 parser = argparse.ArgumentParser(description="Import all datasets for a given city")
 parser.add_argument("city", default="Helsinki", help="City data to import")
@@ -49,10 +52,10 @@ print(f"{city} centroid {centroid}")
 print(f"{city} country {country}")
 
 # OSM data needs to be imported first, will create the database
-print(f"--- Importing OSM data for {country} ---")
+print(f"--- Importing OSM data for {city} ---")
 for continent in CONTINENTS:
     # Nominatim does not provide us with the continent. Will have to do some guessing
-    if not os.system(f"./scripts/import_osm.sh {continent} {country.lower()}"):
+    if not os.system(f"./scripts/import_osm.sh {continent} {country.lower()} {city.lower()} {osm_extracts_api_key}"):
         break
 
 print(f"--- Importing Flickr data for {city} ---")
