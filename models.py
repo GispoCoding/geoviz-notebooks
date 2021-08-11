@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger
+from sqlalchemy import Column, BigInteger, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import JSONB
 from geoalchemy2 import Geometry
@@ -34,7 +34,7 @@ class FlickrPoint(Base):
 
 class GTFSStop(Base):
     __tablename__ = 'gtfsstops'
-    stop_id = Column(BigInteger, primary_key=True)
+    stop_id = Column(String, primary_key=True)
     properties = Column(JSONB)
     geom = Column(Geometry(geometry_type='POINT'))
 
