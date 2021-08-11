@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 import re
 import requests
@@ -21,7 +22,7 @@ GTFS_DATASETS = {
 
 
 class GTFSImporter(object):
-    def __init__(self, city: str, url: str):
+    def __init__(self, city: str = "", url: str = ""):
         if not city and not url:
             raise AssertionError("You must specify a city or GTFS feed url.")
         if url:
@@ -39,10 +40,14 @@ class GTFSImporter(object):
         if not self.url:
             print(f"GTFS data not found for {self.city}, skipping.")
             return
-        print("Downloading gtfs zip...")
-        response = requests.get(self.url, allow_redirects=True)
         filename = f"{self.city}.gtfs.zip"
-        open(filename, 'wb').write(response.content)
+        if os.path.isfile(filename):
+            print("Found saved gtfs zip...")
+        else:
+            print("Downloading gtfs zip...")
+            response = requests.get(self.url, allow_redirects=True)
+            open(filename, 'wb').write(response.content)
+
         print("Loading gtfs zip...")
         routes, stops, stop_times, trips, shapes = import_gtfs(filename)
         # only calculate average daily frequency for all stops for now
@@ -60,11 +65,15 @@ class GTFSImporter(object):
             # use dict, since the json may contain the same stop twice!
             if stop_id in stops_to_save:
                 print(f"Stop {stop_id} found twice, overwriting")
-            stops_to_save[stop_id] = GTFSStop(
-                stop_id=stop_id, properties=stop, geom=geom
+            # multiple cities may contain departures from the same stop. such
+            # a stop is usually outside both cities (unless cities overlap).
+            # overwrite existing data for the stop.
+            stops_to_save[stop_id] = self.session.merge(
+                GTFSStop(stop_id=stop_id, properties=stop, geom=geom)
             )
         print(f"Saving {len(stops_to_save)} GTFS stops...")
-        self.session.bulk_save_objects(stops_to_save.values())
+        # we cannot use bulk save, as we have to check for existing ids.
+        # self.session.bulk_save_objects(stops_to_save.values())
         self.session.commit()
 
 
