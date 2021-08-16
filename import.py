@@ -55,7 +55,7 @@ print(f"{city} country {country}")
 print(f"--- Importing OSM data for {city} ---")
 for continent in CONTINENTS:
     # Nominatim does not provide us with the continent. Will have to do some guessing
-    if not os.system(f"./scripts/import_osm.sh {continent} {country.lower()} {city.lower()} {osm_extracts_api_key}"):
+    if not os.system(f"./scripts/import_osm.sh {continent} {country.lower()} \"{city.lower()}\" {osm_extracts_api_key}"):
         break
 
 print(f"--- Importing Flickr data for {city} ---")
