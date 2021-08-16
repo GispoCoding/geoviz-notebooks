@@ -19,7 +19,7 @@ GTFS_DATASETS = {
     "Copenhagen": "https://transitfeeds.com/p/rejseplanen/705/latest/download",
     "Tallinn": "https://transitfeeds.com/p/maanteeamet/510/latest/download",
     "Stockholm": "https://transitfeeds.com/p/storstockholms-lokaltrafik/1086/latest/download",
-    "St. Petersburg": "https://transitfeeds.com/p/saint-petersburg/826/latest/download",
+    "Saint Petersburg": "https://transitfeeds.com/p/saint-petersburg/826/latest/download",
     "Oslo": "https://transitfeeds.com/p/norsk-reiseinformasjon-as/791/latest/download",
     "Riga": "https://transitfeeds.com/p/rigas-satiksme/333/latest/download",
     "Berlin": "https://transitfeeds.com/p/verkehrsverbund-berlin-brandenburg/213/latest/download",
