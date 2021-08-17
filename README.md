@@ -69,9 +69,15 @@ The index is calculated by the [export notebook](notebooks/export.ipynb). Open t
 - the colum/sum/mean value you wish to use from each dataset
 - the weight of each dataset in the result map
 
-Or you may just run the notebook as-is to get the default index that contains representative
+You may just run the notebook as-is to get the default index that contains representative
 columns from each dataset, with equal weights for each dataset. The resulting map is displayed
-in the notebook and saved as a standalone HTML map keplergl_map.html . Do note that the HTML
-file will be huge, as the datasets are big.
+in the notebook and saved as a standalone HTML map in notebooks/keplergl_map.html.
+
+To just get the result map non-interactively, you may run
+```
+export.sh
+```
+The resulting map is saved as a standalone HTML map in notebooks/keplergl_map.html. Do note that the
+HTML file will be huge, as the datasets are big.
 
 
