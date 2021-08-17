@@ -63,7 +63,7 @@ python ./import.py Tallinn --gtfs https://transitfeeds.com/p/maanteeamet/510/lat
 Once you have all the datasets imported for your desired city/cities, it is time to calculate
 the desired combination index on the H3 hex grid.
 
-The index is calculated by the notebook (notebooks/export.ipynb). Open the notebook to adjust
+The index is calculated by the [export notebook](notebooks/export.ipynb). Open the notebook to adjust
 - the datasets you wish to include
 - the colum/sum/mean value you wish to use from each dataset
 - the weight of each dataset in the result map
