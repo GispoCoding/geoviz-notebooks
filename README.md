@@ -64,10 +64,9 @@ Once you have all the datasets imported for your desired city/cities, it is time
 the desired combination index on the H3 hex grid.
 
 The index is calculated by the notebook (notebooks/export.ipynb). Open the notebook to adjust
-
-  -the datasets you wish to include
-  -the colum/sum/mean value you wish to use from each dataset
-  -the weight of each dataset in the result map
+-the datasets you wish to include
+-the colum/sum/mean value you wish to use from each dataset
+-the weight of each dataset in the result map
 
 Or you may just run the notebook as-is to get the default index that contains representative
 columns from each dataset, with equal weights for each dataset. The resulting map is displayed
