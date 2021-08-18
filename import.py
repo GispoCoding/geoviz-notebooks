@@ -4,6 +4,7 @@ import requests
 from dotenv import load_dotenv
 from scripts.import_flickr import FlickrImporter
 from scripts.import_gtfs import GTFSImporter
+from scripts.import_kontur import KonturImporter
 from scripts.import_ookla import OoklaImporter
 from scripts.import_osm_accessibility import AccessibilityImporter
 
@@ -89,5 +90,13 @@ ookla_importer = OoklaImporter(
     bbox=(float(bbox[2]), float(bbox[0]), float(bbox[3]), float(bbox[1]))
 )
 ookla_importer.run()
+
+print(f"--- Importing Kontur population data for {city} ---")
+# kontur importer wants the bbox as minx, miny, maxx, maxy floats for now
+kontur_importer = KonturImporter(
+    city=city,
+    bbox=(float(bbox[2]), float(bbox[0]), float(bbox[3]), float(bbox[1]))
+)
+kontur_importer.run()
 
 print(f"--- All datasets for {city} imported to PostGIS ---")

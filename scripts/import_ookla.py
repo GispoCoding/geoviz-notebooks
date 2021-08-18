@@ -68,7 +68,10 @@ class OoklaImporter(object):
         with shapefile.Reader(self.city_file) as shapes:
             points_to_save = {}
             for shaperecord in shapes.shapeRecords():
-                # Ookla records are saved per tile, we only need centroids
+                # Ookla records are saved per tile, we only need centroids.
+                # Note that these cannot be used for analyses at resolution 9
+                # or above as such: not all hexes would contain a tile centroid.
+                # TODO: should we save polygons, to allow high resolution analyses?
                 polygon = Polygon(shaperecord.shape.points)
                 geom = from_shape(polygon.centroid, srid=4326)
                 properties = shaperecord.record.as_dict()

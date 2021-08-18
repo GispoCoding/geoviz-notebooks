@@ -54,3 +54,10 @@ class OoklaPoint(Base):
     quadkey_id = Column(BigInteger, primary_key=True)
     properties = Column(JSONB)
     geom = Column(Geometry(geometry_type='POINT'))
+
+
+class KonturPoint(Base):
+    __tablename__ = 'konturpoints'
+    hex_id = Column(BigInteger, primary_key=True)
+    properties = Column(JSONB)
+    geom = Column(Geometry(geometry_type='POINT'))
