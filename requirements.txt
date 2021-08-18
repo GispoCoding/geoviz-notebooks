@@ -1,5 +1,6 @@
 # Our own requirements
 flickrapi
+GDAL
 geoalchemy2
 gtfs-functions
 h3
@@ -8,6 +9,7 @@ osmnx
 pandana
 pandas
 psycopg2-binary
+pyshp
 python-dotenv
 requests
 

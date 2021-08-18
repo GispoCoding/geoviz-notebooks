@@ -4,6 +4,7 @@ import requests
 from dotenv import load_dotenv
 from scripts.import_flickr import FlickrImporter
 from scripts.import_gtfs import GTFSImporter
+from scripts.import_ookla import OoklaImporter
 from scripts.import_osm_accessibility import AccessibilityImporter
 
 CONTINENTS = [
@@ -80,5 +81,13 @@ accessibility_importer = AccessibilityImporter(
     float(bbox[2]), float(bbox[0]), float(bbox[3]), float(bbox[1])
 )
 accessibility_importer.run()
+
+print(f"--- Importing Ookla speedtest data for {city} ---")
+# ookla importer wants the bbox as minx, miny, maxx, maxy floats for now
+ookla_importer = OoklaImporter(
+    city=city,
+    bbox=(float(bbox[2]), float(bbox[0]), float(bbox[3]), float(bbox[1]))
+)
+ookla_importer.run()
 
 print(f"--- All datasets for {city} imported to PostGIS ---")

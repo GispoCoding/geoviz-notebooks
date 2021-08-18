@@ -47,3 +47,10 @@ class OSMAccessNode(Base):
     node_id = Column(BigInteger, primary_key=True)
     accessibilities = Column(JSONB)
     geom = Column(Geometry(geometry_type='POINT'))
+
+
+class OoklaPoint(Base):
+    __tablename__ = 'ooklapoints'
+    quadkey_id = Column(BigInteger, primary_key=True)
+    properties = Column(JSONB)
+    geom = Column(Geometry(geometry_type='POINT'))
