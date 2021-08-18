@@ -1,6 +1,10 @@
 # invoke with ./import_osm.sh continent country city osm_extracts_apikey
 SCRIPT=`realpath $0`
 SCRIPTPATH=$(dirname "$SCRIPT")
+DATA_PATH="data"
+mkdir $DATA_PATH
+cd $DATA_PATH
+
 # replace spaces with dashes
 CITY="${3// /-}"
 echo $CITY

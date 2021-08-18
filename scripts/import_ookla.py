@@ -18,6 +18,8 @@ from geoalchemy2.shape import from_shape
 sys.path.insert(0, "..")
 from models import OoklaPoint
 
+DATA_PATH = "data"
+
 
 class OoklaImporter(object):
 
@@ -27,7 +29,9 @@ class OoklaImporter(object):
         self.city = city
         self.download_url = "https://ookla-open-data.s3.amazonaws.com/shapefiles/performance/type=fixed/year=2021/quarter=1/"
         self.download_name = "2021-01-01_performance_fixed_tiles"
-        self.city_file = f"{self.download_name}/{self.city}.shp"
+        self.download_file = f"{DATA_PATH}/{self.download_name}.zip"
+        self.unzipped_path = f"{DATA_PATH}/{self.download_name}"
+        self.city_file = f"{self.unzipped_path}/{self.city}.shp"
 
         sql_url = get_connection_url(dbname="geoviz")
         engine = create_engine(sql_url)
@@ -35,18 +39,18 @@ class OoklaImporter(object):
         OoklaPoint.__table__.create(engine, checkfirst=True)
 
     def run(self):
-        if os.path.isfile(f"{self.download_name}.zip"):
+        if os.path.isfile(self.download_file):
             print("Found saved Ookla data...")
         else:
             print("Downloading Ookla data...")
             print(f"{self.download_url}{self.download_name}.zip")
             with requests.get(f"{self.download_url}{self.download_name}.zip", stream=True) as request:
-                with open(f"{self.download_name}.zip", 'wb') as file:
+                with open(self.download_file, 'wb') as file:
                     shutil.copyfileobj(request.raw, file)
-        if not os.path.isdir(self.download_name):
+        if not os.path.isdir(self.unzipped_path):
             print("Extracting zip...")
-            with zipfile.ZipFile(f"{self.download_name}.zip", 'r') as zip_ref:
-                zip_ref.extractall(self.download_name)
+            with zipfile.ZipFile(self.download_file, 'r') as zip_ref:
+                zip_ref.extractall(self.unzipped_path)
 
         if not os.path.isfile(self.city_file):
             print(f"Extracting {self.city} from Ookla data...")
@@ -55,7 +59,7 @@ class OoklaImporter(object):
             # https://gdal.org/python/osgeo.gdal-module.html#VectorTranslateOptions
             city_data = gdal.VectorTranslate(
                 self.city_file,
-                f"{self.download_name}/gps_fixed_tiles.shp",
+                f"{self.unzipped_path}/gps_fixed_tiles.shp",
                 spatFilter=self.bbox
             )
             print(city_data)

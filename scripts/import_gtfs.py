@@ -29,6 +29,8 @@ GTFS_DATASETS = {
     "Vienna": "https://transitfeeds.com/p/stadt-wien/888/latest/download",
 }
 
+DATA_PATH = "data"
+
 
 class GTFSImporter(object):
     def __init__(self, city: str = "", url: str = ""):
@@ -49,7 +51,7 @@ class GTFSImporter(object):
         if not self.url:
             print(f"GTFS data not found for {self.city}, skipping.")
             return
-        filename = f"{self.city}.gtfs.zip"
+        filename = f"{DATA_PATH}/{self.city}.gtfs.zip"
         if os.path.isfile(filename):
             print("Found saved gtfs zip...")
         else:

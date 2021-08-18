@@ -17,6 +17,8 @@ from geoalchemy2.shape import from_shape
 sys.path.insert(0, "..")
 from models import KonturPoint
 
+DATA_PATH = "data"
+
 
 class KonturImporter(object):
 
@@ -26,7 +28,9 @@ class KonturImporter(object):
         self.city = city
         self.download_url = "https://adhoc.kontur.io/data/"
         self.download_name = "kontur_population_20200928.gpkg"
-        self.city_file = f"{self.download_name}_extracts/{self.city}.gpkg"
+        self.download_file = f"{DATA_PATH}/{self.download_name}.gz"
+        self.unzipped_file = f"{DATA_PATH}/{self.download_name}"
+        self.city_file = f"{self.unzipped_file}_extracts/{self.city}.gpkg"
 
         sql_url = get_connection_url(dbname="geoviz")
         engine = create_engine(sql_url)
@@ -34,23 +38,23 @@ class KonturImporter(object):
         KonturPoint.__table__.create(engine, checkfirst=True)
 
     def run(self):
-        if os.path.isfile(f"{self.download_name}.gz"):
+        if os.path.isfile(self.download_file):
             print("Found saved Kontur data...")
         else:
             print("Downloading Kontur data...")
             print(f"{self.download_url}{self.download_name}.gz")
             with requests.get(f"{self.download_url}{self.download_name}.gz", stream=True) as request:
-                with open(f"{self.download_name}.gz", 'wb') as file:
+                with open(self.download_file, 'wb') as file:
                     shutil.copyfileobj(request.raw, file)
-        if not os.path.isfile(self.download_name):
+        if not os.path.isfile(self.unzipped_file):
             print("Extracting gz...")
-            with gzip.open(f"{self.download_name}.gz", 'rb') as gzip_file:
-                with open(self.download_name, 'wb') as out_file:
+            with gzip.open(self.download_file, 'rb') as gzip_file:
+                with open(self.unzipped_file, 'wb') as out_file:
                     shutil.copyfileobj(gzip_file, out_file)
 
         if not os.path.isfile(self.city_file):
-            if not os.path.isdir(f"{self.download_name}_extracts"):
-                os.mkdir(f"{self.download_name}_extracts")
+            if not os.path.isdir(f"{self.unzipped_file}_extracts"):
+                os.mkdir(f"{self.unzipped_file}_extracts")
             print(f"Extracting {self.city} from Kontur data...")
             gdal.UseExceptions()
             # this does the same as ogr2ogr
@@ -58,7 +62,7 @@ class KonturImporter(object):
             # we must specify filter SRS, since the geopackage is in 3857
             city_data = gdal.VectorTranslate(
                 self.city_file,
-                f"{self.download_name}",
+                self.unzipped_file,
                 spatFilter=self.bbox,
                 spatSRS="EPSG:4326"
             )
