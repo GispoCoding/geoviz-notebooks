@@ -15,6 +15,7 @@ from geoalchemy2.shape import from_shape
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
 from models import OSMAccessNode
+from osm_tags import tags_to_filter
 
 
 class AccessibilityImporter(object):
@@ -87,29 +88,14 @@ class AccessibilityImporter(object):
         ]
 
         # Select pois based on osm tags
-        tags = {
-            "amenity": ["cafe", "bar", "pub", "restaurant"],
-            "shop": [
-                "bakery",
-                "convenience",
-                "supermarket",
-                "mall",
-                "department_store",
-                "clothes",
-                "fashion",
-                "shoes",
-            ],
-            "leisure": ["fitness_centre"],
-        }
-
         print("Constructing amenities POIs...")
         # Get amentities from place/bbox
         if ignore_geocoding is True:
             amenities = ox.geometries.geometries_from_bbox(
-                self.maxy, self.miny, self.maxx, self.minx, tags=tags
+                self.maxy, self.miny, self.maxx, self.minx, tags=tags_to_filter
             )
         else:
-            amenities = ox.geometries.geometries_from_place(cityname, tags=tags)
+            amenities = ox.geometries.geometries_from_place(cityname, tags=tags_to_filter)
         # Project amenities
         amenities = amenities.to_crs(epsg=3035)
         # Construct the pandana network model
