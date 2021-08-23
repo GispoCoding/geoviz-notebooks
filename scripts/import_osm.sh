@@ -39,3 +39,8 @@ if createdb geoviz; then
 else
     osm2pgsql -d geoviz -O flex $INPUT_FILE -S $SCRIPTPATH/flex-config/generic.lua --slim --append
 fi
+
+# Finally, osm2pgsql saves polygons and points in separate tables. Do some postprocessing to get
+# all data we want in point table
+echo "Postprocessing OSM tables..."
+psql -d geoviz < post_import.sql
