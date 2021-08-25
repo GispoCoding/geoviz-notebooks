@@ -1,6 +1,6 @@
 # Our own requirements
 flickrapi
-GDAL
+GDAL==3.0.4  # GDAL>=3.1 doesn't build with docker: https://github.com/thinkWhere/GDAL-Docker/blob/develop/3.8-ubuntu/Dockerfile#L32
 geoalchemy2
 gtfs-functions
 h3
@@ -12,6 +12,7 @@ psycopg2-binary
 pyshp
 python-dotenv
 requests
+sqlalchemy>1.4
 
 # Our GIS tools
 git+https://github.com/GispoCoding/ipygis.git
