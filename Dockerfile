@@ -20,13 +20,13 @@ RUN apt-get update \
 
 # Build osm2pgsql 1.5 (not available in apt)
 RUN git clone https://github.com/openstreetmap/osm2pgsql.git \
-    && cd osm2pgsql \
-    && mkdir build \
-    && cd build \
-    && cmake .. \
+    && mkdir osm2pgsql/build
+WORKDIR "${HOME}/osm2pgsql/build"
+RUN cmake .. \
     && make \
     && make install
 
+WORKDIR "${HOME}"
 USER jovyan
 
 COPY requirements.txt /tmp/
@@ -57,9 +57,4 @@ ENV NB_USER=analyst \
     PGUSER=postgres \
     PGPASSWORD=postgres \
     PGDATABASE=geoviz \
-    PGHOST=localhost \
-    INITIALIZE_DB=true
-
-# todo: add database init here!
-
-WORKDIR "${HOME}"
+    PGHOST=localhost
