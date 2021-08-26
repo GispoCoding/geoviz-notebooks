@@ -1,5 +1,5 @@
 # geoviz-notebooks
-<img width="1110" alt="image" src="https://user-images.githubusercontent.com/9367712/129688245-abe5e0f9-4bcd-4695-a51c-31995822628c.png">
+<img width="913" alt="image" src="https://user-images.githubusercontent.com/9367712/130978610-dc3a6a7c-ed78-47c4-b380-fcd1b354126c.png">
 
 Python tool for analyzing geospatial data in cities.
 
