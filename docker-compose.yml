@@ -46,7 +46,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=geoviz
   notebook:
-    image: gispo/geoviz-notebooks
+    image: gispo/geoviz-notebook
     container_name: notebook
     volumes:
       - .:/home/jovyan

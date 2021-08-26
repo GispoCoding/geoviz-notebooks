@@ -11,11 +11,24 @@ This repo consists of two components:
 
 ## Requirements
 
+* Docker
+
+OR
+
 * Python >= 3.8
 * [Osm2pgsql](https://osm2pgsql.org/doc/install.html)
 * PostGIS accepting connections at localhost:5432
 
-## How to get started
+## How to get started (with docker)
+
+If you wish to use the ready made docker compose file, you will get the whole shebang up
+by typing
+
+```
+docker compose up
+```
+
+## How to get started without docker
 
 We recommend creating your own conda env, pyenv, or pyenv which contains conda wheels.
 The last option should make installing all dependencies easier:
@@ -25,6 +38,14 @@ pyenv install miniconda-latest
 pyenv local miniconda-latest
 pip install -r requirements.txt
 ```
+
+Then you have to start the notebook server by
+
+```
+jupyter notebook
+```
+
+## Configuration
 
 If you wish to import data from the Flickr API, fill in your
 [Flickr api key](https://www.flickr.com/services/api/misc.api_keys.html) and secret
@@ -40,7 +61,8 @@ in the `.env` file or the corresponding environment variable.
 Then, you may import all datasets for any city with a single command
 
 ```
-python ./import.py Helsinki
+docker compose exec notebook ./import.py Helsinki  # if you are running docker
+./import.py Helsinki                               # if you are not running docker
 ```
 
 or any other city. You may import multiple cities in the same database if you wish to do
@@ -56,7 +78,7 @@ If a city you want to import does not have a GTFS feed URL in `scripts/import_gt
 alternatively run the import with the right URL as parameter, e.g.
 
 ```
-python ./import.py Tallinn --gtfs https://transitfeeds.com/p/maanteeamet/510/latest/download
+./import.py Tallinn --gtfs https://transitfeeds.com/p/maanteeamet/510/latest/download
 ```
 
 ## How to create result map
@@ -64,7 +86,10 @@ python ./import.py Tallinn --gtfs https://transitfeeds.com/p/maanteeamet/510/lat
 Once you have all the datasets imported for your desired city/cities, it is time to calculate
 the desired combination index on the H3 hex grid.
 
-The index is calculated by the [export notebook](notebooks/export.ipynb). Open the notebook to adjust
+The index is calculated by the [export notebook](notebooks/export.ipynb). The notebook is
+available at localhost:8888/tree/notebooks/export.ipynb .
+
+Open the notebook to adjust
 - the datasets you wish to include
 - the column/sum/mean value you wish to use from each dataset
 - the weight of each dataset in the result map
@@ -73,9 +98,26 @@ You may just run the notebook as-is to get the default index that contains repre
 columns/statistics from each dataset, with equal weights for each dataset. The resulting map is displayed
 in the notebook and saved as a standalone HTML map in notebooks/keplergl_map.html.
 
-To just get the result map non-interactively, you may run
+To just get the result map non-interactively, you may run the notebook on the command line with
+
 ```
-export.sh
+docker compose exec notebook ./export.sh  # if you are running docker
+./export.sh                               # if you are not running docker
 ```
+
 The resulting map is saved as a standalone HTML map in notebooks/keplergl_map.html. Do note that the
 HTML file will be huge, as the datasets are big.
+
+
+## How to share the map
+
+The docker configuration contains a simple web server that serves the latest keplergl_map.html
+password-protected.
+
+You may set the username and password that allows access to the visualization by setting the desired
+username and password hash in [server/.env](server/.env).
+
+Therefore, there are a few ways of getting your custom visualization html shared with the audience:
+- change the notebook on your computer and distribute the resulting html file
+- change the notebook on the server and rerun export.sh to update the map on the server
+- if you wish to make the new parameters official, make a PR to this repo.
