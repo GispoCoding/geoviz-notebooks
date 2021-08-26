@@ -15,6 +15,8 @@ from models import GTFSStop
 
 GTFS_DATASETS = {
     "Helsinki": "https://transitfeeds.com/p/helsinki-regional-transport/735/latest/download",
+    "Turku": "https://transitfeeds.com/p/city-of-turku/730/latest/download",
+    "Tampere": "https://transitfeeds.com/p/tampereen-joukkoliikenne/727/latest/download",
     "Warsaw": "https://transitfeeds.com/p/ztm-warszawa/720/latest/download",
     "Copenhagen": "https://transitfeeds.com/p/rejseplanen/705/latest/download",
     "Tallinn": "https://transitfeeds.com/p/maanteeamet/510/latest/download",

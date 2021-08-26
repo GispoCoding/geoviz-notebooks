@@ -1,4 +1,7 @@
+__pycache__
+.vscode
 cache
 data
+osm2pgsql
 pgdata
 server

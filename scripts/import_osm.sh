@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # invoke with ./import_osm.sh continent country city osm_extracts_apikey
 SCRIPT=`realpath $0`
 SCRIPTPATH=$(dirname "$SCRIPT")
@@ -43,4 +45,4 @@ fi
 # Finally, osm2pgsql saves polygons and points in separate tables. Do some postprocessing to get
 # all data we want in point table
 echo "Postprocessing OSM tables..."
-psql -d geoviz < post_import.sql
+psql -d geoviz < $SCRIPTPATH/post_import.sql

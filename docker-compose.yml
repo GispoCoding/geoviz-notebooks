@@ -32,11 +32,27 @@ services:
   #     - 443:443
   #     # - 80:80 #optional
   #   restart: unless-stopped
+  postgis:
+    image: postgis/postgis
+    container_name: postgis
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data/pgdata
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=geoviz
   notebook:
     image: gispo/geoviz-notebooks
     container_name: notebook
     volumes:
-      - .:/home/jovyan/geoviz
-      - pgdata:/var/lib/postgresql/data
+      - .:/home/jovyan
     ports:
       - 8888:8888
+    depends_on:
+      - postgis
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
