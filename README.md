@@ -1,5 +1,5 @@
 # geoviz-notebooks
-<img width="1110" alt="image" src="https://user-images.githubusercontent.com/9367712/129688245-abe5e0f9-4bcd-4695-a51c-31995822628c.png">
+<img width="913" alt="image" src="https://user-images.githubusercontent.com/9367712/130978610-dc3a6a7c-ed78-47c4-b380-fcd1b354126c.png">
 
 Python tool for analyzing geospatial data in cities.
 
@@ -25,7 +25,7 @@ If you wish to use the ready made docker compose file, you will get the whole sh
 by typing
 
 ```
-docker compose up
+docker-compose up
 ```
 
 ## How to get started without docker
@@ -61,7 +61,7 @@ in the `.env` file or the corresponding environment variable.
 Then, you may import all datasets for any city with a single command
 
 ```
-docker compose exec notebook ./import.py Helsinki  # if you are running docker
+docker-compose exec notebook ./import.py Helsinki  # if you are running docker
 ./import.py Helsinki                               # if you are not running docker
 ```
 
@@ -101,7 +101,7 @@ in the notebook and saved as a standalone HTML map in notebooks/keplergl_map.htm
 To just get the result map non-interactively, you may run the notebook on the command line with
 
 ```
-docker compose exec notebook ./export.sh  # if you are running docker
+docker-compose exec notebook ./export.sh  # if you are running docker
 ./export.sh                               # if you are not running docker
 ```
 
