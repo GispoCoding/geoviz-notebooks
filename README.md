@@ -25,7 +25,7 @@ If you wish to use the ready made docker compose file, you will get the whole sh
 by typing
 
 ```
-docker compose up
+docker-compose up
 ```
 
 ## How to get started without docker
@@ -61,7 +61,7 @@ in the `.env` file or the corresponding environment variable.
 Then, you may import all datasets for any city with a single command
 
 ```
-docker compose exec notebook ./import.py Helsinki  # if you are running docker
+docker-compose exec notebook ./import.py Helsinki  # if you are running docker
 ./import.py Helsinki                               # if you are not running docker
 ```
 
@@ -101,7 +101,7 @@ in the notebook and saved as a standalone HTML map in notebooks/keplergl_map.htm
 To just get the result map non-interactively, you may run the notebook on the command line with
 
 ```
-docker compose exec notebook ./export.sh  # if you are running docker
+docker-compose exec notebook ./export.sh  # if you are running docker
 ./export.sh                               # if you are not running docker
 ```
 
