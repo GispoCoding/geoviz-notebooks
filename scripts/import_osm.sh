@@ -37,6 +37,7 @@ fi
 
 # only create the database if missing
 if createdb geoviz; then
+    psql -d geoviz -c "create extension postgis;"
     osm2pgsql -d geoviz -O flex $INPUT_FILE -S $SCRIPTPATH/flex-config/generic.lua --slim
 else
     osm2pgsql -d geoviz -O flex $INPUT_FILE -S $SCRIPTPATH/flex-config/generic.lua --slim --append
