@@ -2,36 +2,38 @@ services:
   flask:
     image: tiangolo/uwsgi-nginx-flask:python3.8
     container_name: flask
-    ports:
-      - 80:80
+    # ports:
+    #   - 80:80 # swag should respond here
     volumes:
       - ./server/:/app
       - ./notebooks/:/app/notebooks
-  # swag:
-  #   image: ghcr.io/linuxserver/swag
-  #   container_name: swag
-  #   cap_add:
-  #     - NET_ADMIN
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=Europe/Helsinki
-  #     - URL=gispocoding.fi
-  #     - SUBDOMAINS=geoviz,
-  #     - VALIDATION=dns
-  #     # - CERTPROVIDER= #optional
-  #     - DNSPLUGIN=route53
-  #     # - DUCKDNSTOKEN=<token> #optional
-  #     # - EMAIL=<e-mail> #optional
-  #     # - ONLY_SUBDOMAINS=false #optional
-  #     # - EXTRA_DOMAINS=<extradomains> #optional
-  #     # - STAGING=false #optional
-  #   volumes:
-  #     - ./server/swag/:/config
-  #   ports:
-  #     - 443:443
-  #     # - 80:80 #optional
-  #   restart: unless-stopped
+  swag:
+    image: ghcr.io/linuxserver/swag
+    container_name: swag
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Helsinki
+      - URL=gispocoding.fi
+      - SUBDOMAINS=geoviz,
+      - VALIDATION=dns
+      # - CERTPROVIDER= #optional
+      - DNSPLUGIN=route53
+      # - DUCKDNSTOKEN=<token> #optional
+      # - EMAIL=<e-mail> #optional
+      # - ONLY_SUBDOMAINS=false #optional
+      # - EXTRA_DOMAINS=<extradomains> #optional
+      # - STAGING=false #optional
+    volumes:
+      - ./server/swag/:/config
+    ports:
+      - 443:443
+      - 80:80 #optional
+    depends_on:
+      - flask
+    restart: unless-stopped
   postgis:
     image: postgis/postgis
     container_name: postgis
