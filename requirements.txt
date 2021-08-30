@@ -6,7 +6,8 @@ gtfs-functions
 h3
 jupyterlab
 osmnx
-pandana
+# use our own pandana fork until https://github.com/UDST/pandana/issues/170 is resolved
+git+https://github.com/GispoCoding/pandana.git
 pandas
 psycopg2-binary
 pyshp

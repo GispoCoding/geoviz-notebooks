@@ -111,11 +111,15 @@ class AccessibilityImporter(object):
         # Specify a max travel distance for analysis
         # Minutes -> seconds
         maxdist = walk_time * 60
+        # 1 minute max distance from POIs to network
+        mapping_distance = 60
+
         # Set the amenities' locations on the network
         network.set_pois(
             category="pois",
             maxdist=maxdist,
             maxitems=10,
+            mapping_distance=mapping_distance,
             x_col=centroids.x,
             y_col=centroids.y,
         )
