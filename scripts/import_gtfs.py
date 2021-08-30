@@ -14,21 +14,21 @@ sys.path.insert(0, "..")
 from models import GTFSStop
 
 GTFS_DATASETS = {
-    "Helsinki": "https://transitfeeds.com/p/helsinki-regional-transport/735/latest/download",
-    "Turku": "https://transitfeeds.com/p/city-of-turku/730/latest/download",
-    "Tampere": "https://transitfeeds.com/p/tampereen-joukkoliikenne/727/latest/download",
-    "Warsaw": "https://transitfeeds.com/p/ztm-warszawa/720/latest/download",
-    "Copenhagen": "https://transitfeeds.com/p/rejseplanen/705/latest/download",
-    "Tallinn": "https://transitfeeds.com/p/maanteeamet/510/latest/download",
-    "Stockholm": "https://transitfeeds.com/p/storstockholms-lokaltrafik/1086/latest/download",
-    "Saint Petersburg": "https://transitfeeds.com/p/saint-petersburg/826/latest/download",
-    "Oslo": "https://transitfeeds.com/p/norsk-reiseinformasjon-as/791/latest/download",
-    "Riga": "https://transitfeeds.com/p/rigas-satiksme/333/latest/download",
-    "Berlin": "https://transitfeeds.com/p/verkehrsverbund-berlin-brandenburg/213/latest/download",
-    "Hamburg": "https://transitfeeds.com/p/hamburger-verkehrsverbund-gmbh/1010/latest/download",
-    "Munich": "https://transitfeeds.com/p/m-nchner-verkehrs-und-tarifverbund/1132/latest/download",
-    "Amsterdam": "https://transitfeeds.com/p/ov/814/latest/download",
-    "Vienna": "https://transitfeeds.com/p/stadt-wien/888/latest/download",
+    "Helsinki": "https://infopalvelut.storage.hsldev.com/gtfs/hsl.zip",
+    "Turku": "http://data.foli.fi/gtfs/gtfs.zip",
+    "Tampere": "http://data.itsfactory.fi/journeys/files/gtfs/latest/gtfs_tampere.zip",
+    "Warsaw": "https://mkuran.pl/gtfs/warsaw.zip",
+    "Copenhagen": "http://www.rejseplanen.info/labs/GTFS.zip",
+    "Tallinn": "http://www.peatus.ee/gtfs/gtfs.zip",
+    "Stockholm": "https://data.samtrafiken.se/trafiklab/gtfs-sverige-2/2021/08/sweden-20210827.zip",
+    "Saint Petersburg": "https://transport.orgp.spb.ru/Portal/transport/internalapi/gtfs/feed.zip",
+    "Oslo": "https://storage.googleapis.com/marduk-production/outbound/gtfs/rb_norway-aggregated-gtfs.zip",
+    "Riga": "https://data.gov.lv/dati/dataset/6d78358a-0095-4ce3-b119-6cde5d0ac54f/resource/612b7cd9-fac1-4fbc-889e-e27f1a9dcaa5/download/marsrutusaraksti08_2021.zip",
+    "Berlin": "https://www.vbb.de/fileadmin/user_upload/VBB/Dokumente/API-Datensaetze/GTFS.zip",
+    "Hamburg": "http://daten.transparenz.hamburg.de/Dataport.HmbTG.ZS.Webservice.GetRessource100/GetRessource100.svc/74444c22-a877-4cea-90bf-aa5c94c88ae8/Upload__HVV_Rohdaten_GTFS_Fpl_20210805.zip",
+    "Munich": "https://www.mvv-muenchen.de/fileadmin/mediapool/02-Fahrplanauskunft/03-Downloads/openData/mvv_gtfs.zip",
+    "Amsterdam": "http://gtfs.ovapi.nl/nl/gtfs-nl.zip",
+    "Vienna": "http://www.wienerlinien.at/ogd_realtime/doku/ogd/gtfs/gtfs.zip",
 }
 
 DATA_PATH = "data"
