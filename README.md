@@ -4,11 +4,11 @@
 Python tool for analyzing geospatial data in cities.
 
 This repo consists of three components:
-- *import* scripts that import a variety of open geospatial datasets for your favorite city
-- *notebook or export script* that
+- [*import scripts*](#how-to-import-data) that import a variety of open geospatial datasets for your favorite city
+- [*notebook or export script*](#how-to-create-result-map) that
   - combine the datasets to form an index value per [H3 hex](https://github.com/uber/h3), and
   - create a [Kepler.gl](https://github.com/keplergl/kepler.gl) H3 map of the index
-- *https server* that serves the resulting map password protected if the notebook is run on a server
+- [*https server*](#how-to-share-the-map) that serves the resulting map password protected if the notebook is run on a server
 
 ## Requirements
 
