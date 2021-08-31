@@ -59,7 +59,8 @@ in the `.env` file or the corresponding environment variable.
 
 ## How to import data
 
-Then, you may import all datasets for any city with a single command
+Please, [add your API keys in the configuration](#configuration) first. Then,
+you may import all datasets for any city with a single command
 
 ```
 docker-compose run notebook ./import.py Helsinki  # if you are running docker
