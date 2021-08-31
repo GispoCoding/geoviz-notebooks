@@ -120,7 +120,11 @@ docker-compose up serve
 ```
 
 You may set the username and password that allows access to the visualization by setting the desired
-username and password hash in [server/.env](server/.env).
+username and password hash in [server/.env](server/.env). To get https certificates, you need to add
+your own domain and subdomain in
+https://github.com/GispoCoding/geoviz-notebooks/blob/main/docker-compose.yml#L17 and your
+AWS access credentials in server/swag/dns-conf/route53.ini , or read [Swag instructions](https://docs.linuxserver.io/general/swag#create-container-via-dns-validation-with-a-wildcard-cert) and change DNSPLUGIN value at https://github.com/GispoCoding/geoviz-notebooks/blob/main/docker-compose.yml#L20 if you are running on a provider
+other than AWS.
 
 Therefore, there are a few ways of getting your custom visualization html shared with the audience:
 - change and run the notebook on your computer (or run export.sh) and distribute the resulting html file
