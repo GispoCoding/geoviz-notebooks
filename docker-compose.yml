@@ -7,7 +7,7 @@ services:
     volumes:
       - ./server/:/app
       - ./notebooks/:/app/notebooks
-  swag:
+  serve:
     image: ghcr.io/linuxserver/swag
     container_name: swag
     cap_add:
