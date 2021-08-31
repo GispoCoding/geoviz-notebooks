@@ -73,7 +73,7 @@ Do note that cities in bigger countries may be slow to import if the city is not
 as a separate OSM extract. In that case, we will have to download the whole country. All other
 dataset sizes are determined by the size of the city.
 
-If a city you want to import does not have a GTFS feed URL in `scripts/import_gtfs.py`
+If a city you want to import does not have a GTFS feed URL in [scripts/import_gtfs.py](scripts/import_gtfs.py)
 `GTFS_DATASETS` variable, you may add the right URL manually there (please make a PR too), or
 alternatively run the import with the right URL as parameter, e.g.
 
