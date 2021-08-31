@@ -66,8 +66,8 @@ docker-compose run notebook ./import.py Helsinki  # if you are running docker
 ```
 
 or any other city. You may import multiple cities in the same database if you wish to do
-comparisons between cities. You may also import single datasets by separately running any of
-the scripts inside the scripts directory.
+comparisons between cities. You may only import some datasets by --datasets parameter, e.g.
+`./import.py Helsinki --datasets "access gtfs ookla"`.
 
 Do note that cities in bigger countries may be slow to import if the city is not available
 as a separate OSM extract. In that case, we will have to download the whole country. All other
