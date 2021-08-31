@@ -2,8 +2,6 @@ services:
   flask:
     image: tiangolo/uwsgi-nginx-flask:python3.8
     container_name: flask
-    # ports:
-    #   - 80:80 # swag should respond here
     volumes:
       - ./server/:/app
       - ./notebooks/:/app/notebooks
@@ -19,18 +17,12 @@ services:
       - URL=gispocoding.fi
       - SUBDOMAINS=geoviz,
       - VALIDATION=dns
-      # - CERTPROVIDER= #optional
       - DNSPLUGIN=route53
-      # - DUCKDNSTOKEN=<token> #optional
-      # - EMAIL=<e-mail> #optional
-      # - ONLY_SUBDOMAINS=false #optional
-      # - EXTRA_DOMAINS=<extradomains> #optional
-      # - STAGING=false #optional
     volumes:
       - ./server/swag/:/config
     ports:
       - 443:443
-      - 80:80 #optional
+      - 80:80
     depends_on:
       - flask
     restart: always
