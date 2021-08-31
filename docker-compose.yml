@@ -33,7 +33,7 @@ services:
       - 80:80 #optional
     depends_on:
       - flask
-    restart: unless-stopped
+    restart: always
   postgis:
     image: postgis/postgis
     container_name: postgis
