@@ -116,7 +116,7 @@ password-protected. The map is served at localhost:443/map by running
 
 ```
 docker-compose up serve
-```
+```
 
 You may set the username and password that allows access to the visualization by setting the desired
 username and password hash in [server/.env](server/.env).
