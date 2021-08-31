@@ -115,6 +115,7 @@ The docker configuration contains a simple https server that serves the latest k
 password-protected. The map is served at localhost:443/map by running
 
 ```
+cp server/flask.subdomain.conf server/swag/nginx/site-confs/default
 docker-compose up serve
 ```
 
