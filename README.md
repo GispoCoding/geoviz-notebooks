@@ -13,6 +13,7 @@ This repo consists of three components:
 ## Requirements
 
 * Docker
+* Docker-compose
 
 OR
 
