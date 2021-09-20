@@ -86,13 +86,16 @@ class OoklaImporter(object):
                     # paid for fibre cable
                     continue
                 quadkey_id = properties.pop("quadkey")
-                points_to_save[quadkey_id] = OoklaPoint(
-                    quadkey_id=quadkey_id, properties=properties, geom=geom
+                # multiple cities may contain the same points, if the bboxes overlap.
+                # overwrite existing data for the points.
+                points_to_save[quadkey_id] = self.session.merge(
+                    OoklaPoint(quadkey_id=quadkey_id, properties=properties, geom=geom)
                 )
                 print(geom)
                 print(properties)
         print(f"Saving {len(points_to_save)} Ookla points...")
-        self.session.bulk_save_objects(points_to_save.values())
+        # we cannot use bulk save, as we have to check for existing ids.
+        # self.session.bulk_save_objects(points_to_save.values())
         self.session.commit()
 
 if __name__ == "__main__":

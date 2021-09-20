@@ -85,11 +85,14 @@ class KonturImporter(object):
                     geom = from_shape(polygon.centroid, srid=3857)
                     properties = record["properties"]
                     hex_id = record["id"]
-                    points_to_save[hex_id] = KonturPoint(
-                        hex_id=hex_id, properties=properties, geom=geom
+                    # multiple cities may contain the same hexes, if the bboxes overlap.
+                    # overwrite existing data for the hexes.
+                    points_to_save[hex_id] = self.session.merge(
+                        KonturPoint(hex_id=hex_id, properties=properties, geom=geom)
                     )
         print(f"Saving {len(points_to_save)} Kontur points...")
-        self.session.bulk_save_objects(points_to_save.values())
+        # we cannot use bulk save, as we have to check for existing ids.
+        # self.session.bulk_save_objects(points_to_save.values())
         self.session.commit()
 
 
