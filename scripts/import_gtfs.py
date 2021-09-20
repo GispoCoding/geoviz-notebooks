@@ -30,6 +30,7 @@ GTFS_DATASETS = {
     "Amsterdam": "http://gtfs.ovapi.nl/nl/gtfs-nl.zip",
     "Vienna": "http://www.wienerlinien.at/ogd_realtime/doku/ogd/gtfs/gtfs.zip",
     "Gdansk": "https://mkuran.pl/gtfs/tristar.zip",
+    "Wroclaw": "https://www.wroclaw.pl/open-data/87b09b32-f076-4475-8ec9-6020ed1f9ac0/OtwartyWroclaw_rozklad_jazdy_GTFS.zip",
 }
 
 DATA_PATH = "data"
