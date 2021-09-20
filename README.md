@@ -3,15 +3,17 @@
 
 Python tool for analyzing geospatial data in cities.
 
-This repo consists of two components:
-- *import* scripts that import a variety of open geospatial datasets for your favorite city
-- *notebook or export script* that
+This repo consists of three components:
+- [*import scripts*](#how-to-import-data) that import a variety of open geospatial datasets for your favorite city
+- [*notebook or export script*](#how-to-create-result-map) that
   - combine the datasets to form an index value per [H3 hex](https://github.com/uber/h3), and
   - create a [Kepler.gl](https://github.com/keplergl/kepler.gl) H3 map of the index
+- [*https server*](#how-to-share-the-map) that serves the resulting map password protected if the notebook is run on a server
 
 ## Requirements
 
 * Docker
+* Docker-compose
 
 OR
 
@@ -58,7 +60,8 @@ in the `.env` file or the corresponding environment variable.
 
 ## How to import data
 
-Then, you may import all datasets for any city with a single command
+Please, [add your API keys in the configuration](#configuration) first. Then,
+you may import all datasets for any city with a single command
 
 ```
 docker-compose run notebook ./import.py Helsinki  # if you are running docker
@@ -121,9 +124,8 @@ docker-compose up serve
 
 You may set the username and password that allows access to the visualization by setting the desired
 username and password hash in [server/.env](server/.env). To get https certificates, you need to add
-your own domain and subdomain in
-https://github.com/GispoCoding/geoviz-notebooks/blob/main/docker-compose.yml#L17 and your
-AWS access credentials in server/swag/dns-conf/route53.ini , or read [Swag instructions](https://docs.linuxserver.io/general/swag#create-container-via-dns-validation-with-a-wildcard-cert) and change DNSPLUGIN value at https://github.com/GispoCoding/geoviz-notebooks/blob/main/docker-compose.yml#L20 if you are running on a provider
+your own domain and subdomain in [docker-compose.yml#L17] and your
+AWS access credentials in server/swag/dns-conf/route53.ini , or read [Swag instructions](https://docs.linuxserver.io/general/swag#create-container-via-dns-validation-with-a-wildcard-cert) and change DNSPLUGIN value at [docker-compose.yml#L20] if you are running on a provider
 other than AWS.
 
 Therefore, there are a few ways of getting your custom visualization html shared with the audience:
