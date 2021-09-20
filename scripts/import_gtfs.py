@@ -29,6 +29,7 @@ GTFS_DATASETS = {
     "Munich": "https://www.mvv-muenchen.de/fileadmin/mediapool/02-Fahrplanauskunft/03-Downloads/openData/mvv_gtfs.zip",
     "Amsterdam": "http://gtfs.ovapi.nl/nl/gtfs-nl.zip",
     "Vienna": "http://www.wienerlinien.at/ogd_realtime/doku/ogd/gtfs/gtfs.zip",
+    "Gdansk": "https://mkuran.pl/gtfs/tristar.zip",
 }
 
 DATA_PATH = "data"
