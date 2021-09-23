@@ -60,10 +60,14 @@ class OSMParquetImporter(object):
             id, tags, lat, lon, hex = point[1:6]
             # ndarray is not json serializable as-is
             tags = tags.tolist()
-            geom = from_shape(Point(lat, lon), srid=4326)
+            # tags are key, value pairs, convert back to original json
+            tag_json = {}
+            for item in tags:
+                tag_json[item["key"]] = item["value"]
+            geom = from_shape(Point(lon, lat), srid=4326)
 
             points_to_save[id] = OSMPoint(
-                node_id=id, tags=tags, geom=geom
+                node_id=id, tags=tag_json, geom=geom
             )
 
         for part in glob.glob(f"{self.unzipped_path}/part-*.parquet"):

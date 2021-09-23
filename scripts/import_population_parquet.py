@@ -62,7 +62,8 @@ class PopulationParquetImporter(object):
             if any(isnan(value) for value in populations):
                 populations = [None if isnan(value) else value
                                for value in populations]
-            centroid = Point(h3_to_geo(id))
+            lat, lon = h3_to_geo(id)
+            centroid = Point(lon, lat)
             geom = from_shape(centroid, srid=4326)
             hexes_to_save[id] = PopulationHex(
                 hex_id=id,

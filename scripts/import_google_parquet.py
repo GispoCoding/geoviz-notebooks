@@ -81,7 +81,7 @@ class GoogleParquetImporter(object):
 
             if popularity is not None:
                 popularity = aggregate_popularity(popularity)
-            geom = from_shape(Point(location['lat'], location['lng']), srid=4326)
+            geom = from_shape(Point(location['lng'], location['lat']), srid=4326)
             points_to_save[id] = GooglePoint(
                 node_id=id, osm_node_id=osm_node_id, popularity=popularity, geom=geom
             )
