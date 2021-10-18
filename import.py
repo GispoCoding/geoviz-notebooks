@@ -4,6 +4,7 @@ import argparse
 import os
 import requests
 from dotenv import load_dotenv
+from datasets import DATASETS
 from scripts.import_flickr import FlickrImporter
 from scripts.import_gtfs import GTFSImporter
 from scripts.import_kontur import KonturImporter
@@ -27,7 +28,7 @@ parser = argparse.ArgumentParser(description="Import all datasets for a given ci
 parser.add_argument("city", default="Helsinki", help="City to import")
 parser.add_argument("--gtfs", help="Optional GTFS feed URL")
 parser.add_argument("--datasets",
-                    default="osm flickr gtfs access ookla kontur",
+                    default=" ".join([dataset[0] for dataset in DATASETS]),
                     help="Datasets to import. Default is to import all. E.g. \"osm access kontur\""
                     )
 parser.add_argument("--bbox", help="Use different bbox for the city. Format \"minx miny maxx maxy\"")
