@@ -1,4 +1,5 @@
 import os
+import secrets
 from dotenv import load_dotenv
 from flask import Flask, render_template, send_from_directory
 from flask_httpauth import HTTPBasicAuth
@@ -10,6 +11,10 @@ auth = HTTPBasicAuth()
 load_dotenv()
 allowed_username = os.getenv("USERNAME")
 allowed_hash = os.getenv("PASSWORD_HASH")
+secret_key = os.getenv("SECRET_KEY")
+if not secret_key:
+    secret_key = secrets.token_bytes(64)
+app.config['SECRET_KEY'] = secret_key
 
 
 @auth.verify_password
