@@ -1,3 +1,5 @@
 # Web server extra requirements
+Flask
 Flask-HTTPAuth
+flask-wtf
 python-dotenv

@@ -1,11 +1,11 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, render_template, send_from_directory
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import check_password_hash
 
 
-app = Flask(__name__, static_folder='notebooks', static_url_path='')
+app = Flask(__name__, static_url_path='')
 auth = HTTPBasicAuth()
 load_dotenv()
 allowed_username = os.getenv("USERNAME")
@@ -22,7 +22,7 @@ def verify_password(username, password):
 @app.route('/map')
 @auth.login_required
 def map():
-    return app.send_static_file('keplergl_map.html')
+    return send_from_directory('notebooks', 'keplergl_map.html')
 
 
 if __name__ == '__main__':
