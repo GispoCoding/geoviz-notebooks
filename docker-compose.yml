@@ -5,6 +5,7 @@ services:
     volumes:
       - ./server/:/app
       - ./notebooks/:/app/notebooks
+      - ./datasets.py:/app/datasets.py
   serve:
     image: ghcr.io/linuxserver/swag
     container_name: swag
