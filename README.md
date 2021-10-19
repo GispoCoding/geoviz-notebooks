@@ -51,12 +51,16 @@ jupyter notebook
 
 If you wish to import data from the Flickr API, fill in your
 [Flickr api key](https://www.flickr.com/services/api/misc.api_keys.html) and secret
-in the `.env` file or the corresponding environment variable.
+in a `.env` file or the corresponding environment variable.
 
 If you wish to import OSM data faster by using city-specific
 [OSM extracts](https://www.interline.io/osm/extracts/), fill in your
 [OSM extracts api key](https://app.interline.io/products/osm_extracts/orders/new)
-in the `.env` file or the corresponding environment variable.
+in a `.env` file or the corresponding environment variable.
+
+To provide API keys using a `.env` file,
+copy [.env.example](.env.example) to a file called `.env`
+and fill in your secrets.
 
 ## How to import data
 
