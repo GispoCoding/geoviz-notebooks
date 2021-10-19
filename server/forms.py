@@ -12,7 +12,7 @@ from datasets import DATASETS
 
 class LeafletWidget(TextInput):
     """
-    Render bbox input using city name, map and bbox
+    Render bbox input using city name autocomplete field, map and bbox
     """
 
     def __call__(self, field, **kwargs):
@@ -20,7 +20,14 @@ class LeafletWidget(TextInput):
         kwargs.setdefault('type', self.input_type)
         if 'value' not in kwargs:
             kwargs['value'] = field._value()
-        city_name_html = '<input %s>' % self.html_params(name=field.name + '_city', **kwargs)
+        city_name_kwargs = {
+            'id': 'city_search',
+            'name': field.name + '_city',
+            'type': self.input_type,
+            'autocomplete': 'off'
+            }
+        city_name_html = '<input %s>' % self.html_params(**city_name_kwargs)
+
         map_html = '<div id="bbox_map" style="width: 600 px; height: 600px;"></div>'
         instructions_html = '<p>Adjust the coordinates on the map or below, if needed.</p>'
         bbox_html = '<input %s>' % self.html_params(name=field.name, **kwargs)

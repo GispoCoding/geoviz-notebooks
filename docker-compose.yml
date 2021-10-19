@@ -1,4 +1,7 @@
 services:
+  osmnames:
+    image: klokantech/osmnames-sphinxsearch
+    container_name: osmnames
   flask:
     image: tiangolo/uwsgi-nginx-flask:python3.8
     container_name: flask
@@ -26,6 +29,7 @@ services:
       - 80:80
     depends_on:
       - flask
+      - osmnames
     restart: always
   postgis:
     image: postgis/postgis
