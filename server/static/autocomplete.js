@@ -5,6 +5,7 @@ autocomplete.registerCallback(function(item) {
     bbox = item.boundingbox
     document.getElementById('bbox').value = bbox.join();
     bounds = [[bbox[1],bbox[0]],[bbox[3],bbox[2]]];
+    bboxFeature.clearLayers();
     L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(bboxFeature);
     bboxMap.fitBounds(bounds);
 }, true);
