@@ -28,7 +28,7 @@ class LeafletWidget(TextInput):
             }
         city_name_html = '<input %s>' % self.html_params(**city_name_kwargs)
 
-        map_html = '<div id="bbox_map" style="width: 600 px; height: 600px;"></div>'
+        map_html = '<div id="bbox_map" style="width: 600 px; height: 600px; z-index: -1;"></div>'
         instructions_html = '<p>Adjust the coordinates on the map or below, if needed.</p>'
         bbox_html = '<input %s>' % self.html_params(name=field.name, **kwargs)
         return HTMLString(city_name_html + map_html + instructions_html + bbox_html)
