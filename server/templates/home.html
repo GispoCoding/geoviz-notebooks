@@ -2,49 +2,52 @@
 
 {% block content %}
     <div class="container">
-        <h1>{{title}}</h1>
+        <h4>{{title}}</h1>
         <p>{{description}}</p>
         <div class="form-wrapper">
       
             <form method="POST" action="{{ url_for('home') }}">
-                <fieldset class="form-field">
-                    {{ form.dataset_selection.label }}
-                    {{ form.dataset_selection }}
-                    {% if form.gtfs_url.errors %}
-                      <ul class="errors">
-                        {% for error in form.gtfs_url.errors %}
-                          <li>{{ error }}</li>
-                        {% endfor %}
-                      </ul>
-                    {% endif %}
-                </fieldset>
-      
-                <fieldset class="form-field">
-                    {{ form.flickr_apikey.label }}
-                    {{ form.flickr_apikey }}
-                </fieldset>
-      
-                <fieldset class="form-field">
-                    {{ form.mapbox_apikey.label }}
-                    {{ form.mapbox_apikey }}
-                </fieldset>
-      
-                <fieldset class="form-field">
-                    {{ form.gtfs_url.label }}
-                    {{ form.gtfs_url }}
-                    {% if form.gtfs_url.errors %}
-                      <ul class="errors">
-                        {% for error in form.gtfs_url.errors %}
-                          <li>{{ error }}</li>
-                        {% endfor %}
-                      </ul>
-                    {% endif %}
-                </fieldset>
-
-                <fieldset class="form-field">
-                    {{ form.bbox.label }}
-                    {{ form.bbox }}
-                </fieldset>
+                <div class="row">
+                    <div class="col m12 l6">
+                        <fieldset class="form-field">
+                            {{ form.dataset_selection.label }}
+                            {{ form.dataset_selection }}
+                            {% if form.gtfs_url.errors %}
+                            <ul class="errors">
+                                {% for error in form.gtfs_url.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </fieldset>
+            
+                        <fieldset class="form-field">
+                            {{ form.flickr_apikey.label }}
+                            {{ form.flickr_apikey }}
+                        </fieldset>
+            
+                        <fieldset class="form-field">
+                            {{ form.mapbox_apikey.label }}
+                            {{ form.mapbox_apikey }}
+                        </fieldset>
+                        <fieldset class="form-field">
+                            {{ form.gtfs_url.label }}
+                            {{ form.gtfs_url }}
+                            {% if form.gtfs_url.errors %}
+                            <ul class="errors">
+                                {% for error in form.gtfs_url.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </fieldset>
+                    </div>
+                    <div class="col m12 l6">
+                        <fieldset class="form-field">
+                            {{ form.bbox }}
+                        </fieldset>
+                    </div>
+                </div>
       
                 {{ form.import_button }}
       

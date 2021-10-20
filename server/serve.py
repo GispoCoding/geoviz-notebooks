@@ -33,7 +33,7 @@ def map():
 
 
 @app.route('/static/<string:file>')
-def send_js(file):
+def send_static_file(file):
     return send_from_directory('static', file)
 
 

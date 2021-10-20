@@ -1,9 +1,10 @@
 import sys
 #from flask_admin.contrib.geoa.widgets import LeafletWidget
 from flask_wtf import FlaskForm
+from markupsafe import Markup
 from wtforms import SelectMultipleField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, URL
-from wtforms.widgets import CheckboxInput, HTMLString, ListWidget, TextInput
+from wtforms.widgets import html_params, CheckboxInput, HTMLString, ListWidget, TextInput
 
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
@@ -26,12 +27,39 @@ class LeafletWidget(TextInput):
             'type': self.input_type,
             'autocomplete': 'off'
             }
-        city_name_html = '<input %s>' % self.html_params(**city_name_kwargs)
+        city_name_html = 'Name of the city to analyze <input %s>' % self.html_params(**city_name_kwargs)
 
-        map_html = '<div id="bbox_map" style="width: 600 px; height: 600px; z-index: -1;"></div>'
-        instructions_html = '<p>Adjust the coordinates on the map or below, if needed.</p>'
+        map_html = '<div id="bbox_map" style="width: 400 px; height: 400px"></div>'
+        instructions_html = '<p>Adjust the bounding box on the map or below, if needed.</p>'
         bbox_html = '<input %s>' % self.html_params(name=field.name, **kwargs)
-        return HTMLString(city_name_html + map_html + instructions_html + bbox_html)
+        return HTMLString(map_html + city_name_html + instructions_html + bbox_html)
+
+
+class CheckboxListWidget(ListWidget):
+    """
+    Renders a list of fields as a `ul` or `ol` list.
+
+    A variation of CheckboxListWidget that renders checkboxes inside labels
+    for Materialize styling.
+
+    If `prefix_label` is set, the subfield's label is printed before the field,
+    otherwise afterwards. The latter is useful for iterating radios or
+    checkboxes.
+    """
+    html_params = staticmethod(html_params)
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        html = ['<%s %s>' % (self.html_tag, self.html_params(**kwargs))]
+        for subfield in field:
+            if self.prefix_label:
+                html.append('<li><label for=%s><span>%s</span> %s</label></li>' %
+                            (subfield.id, subfield.label.text, subfield()))
+            else:
+                html.append('<li><label for=%s>%s <span>%s</span></label></li>' %
+                            (subfield.id, subfield(), subfield.label.text))
+        html.append('</%s>' % self.html_tag)
+        return Markup(''.join(html))
 
 
 class MultiCheckboxField(SelectMultipleField):
@@ -41,7 +69,7 @@ class MultiCheckboxField(SelectMultipleField):
     Iterating the field will produce subfields, allowing custom rendering of
     the enclosed checkbox fields.
     """
-    widget = ListWidget(prefix_label=False)
+    widget = CheckboxListWidget(prefix_label=False)
     option_widget = CheckboxInput()
 
 
@@ -64,6 +92,6 @@ class AnalysisForm(FlaskForm):
     flickr_apikey = StringField('API key for flickr API')
     mapbox_apikey = StringField('API key for Mapbox')
 
-    bbox = CitySelectionField('City area to analyze')
+    bbox = CitySelectionField()
 
     import_button = SubmitField('Import datasets')

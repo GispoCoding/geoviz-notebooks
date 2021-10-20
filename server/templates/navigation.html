@@ -1,8 +1,14 @@
 <header>
-    <nav>
-     <a href="/">{{title}}</a>
-     <a href="/map">Result map</a>
-     <a href="/instructions">Instructions</a>
-     <a href="/logout">Log out</a>
-   </nav>
+    <div class="navbar-fixed">
+        <nav class="nav-wrapper">
+            <ul class="left hide-on-med-and-down">
+                <li class="active"><a href="/">{{title}}</a></li>
+                <li><a href="/map"><i class="material-icons left">map</i>Result map</a></li>
+            </ul>
+            <ul class="right hide-on-med-and-down">
+                <li><a href="/instructions"><i class="material-icons left">info</i>Instructions</a></li>
+                <li><a href="/logout"><i class="material-icons left">logout</i>Log out</a></li>
+            </ul>
+        </nav>
+    </div>
  </header>

@@ -7,12 +7,14 @@ L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}@2x.png', {
     tileSize: 512,
     zoomOffset: -1
 }).addTo(bboxMap);
+
 var bboxFeature = new L.FeatureGroup();
 var drawControlEditOnly = new L.Control.Draw({
     edit: {
-        featureGroup: bboxFeature
+        featureGroup: bboxFeature,
+        remove: false,
     },
-    draw: false
+    draw: false,
 });
 bboxMap.addControl(drawControlEditOnly);
 bboxMap.addLayer(bboxFeature);
