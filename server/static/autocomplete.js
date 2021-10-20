@@ -1,7 +1,7 @@
 var autocomplete = new kt.OsmNamesAutocomplete(
     'city_search', 'https://geoviz.gispocoding.fi/');
 
-autocomplete.registerCallback(function(item) {
+autocomplete.registerCallback(function(item, True) {
     bbox = item.boundingbox
     document.getElementById('bbox').value = bbox.join();
     bounds = [[bbox[1],bbox[0]],[bbox[3],bbox[2]]];
