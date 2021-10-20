@@ -18,3 +18,6 @@ var drawControlEditOnly = new L.Control.Draw({
 });
 bboxMap.addControl(drawControlEditOnly);
 bboxMap.addLayer(bboxFeature);
+bboxMap.on("draw:editstop", e => {
+    document.getElementById('bbox').value = bboxFeature.getBounds().toBBoxString();
+  });
