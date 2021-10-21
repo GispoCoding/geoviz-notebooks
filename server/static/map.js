@@ -13,7 +13,29 @@ L.tileLayer(tilesUrl, {
 var bboxFeature = new L.FeatureGroup();
 bboxMap.addLayer(bboxFeature);
 
-// event handler
+function setBbox(bbox) {
+    document.getElementById('bbox').value = bbox.join();
+    bounds = [[bbox[1], bbox[0]], [bbox[3], bbox[2]]];
+    // clear old bbox
+    bboxFeature.clearLayers();
+    L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(bboxFeature);
+    // make new bbox editable
+    bboxFeature.getLayers()[0].enableEdit();
+    bboxMap.fitBounds(bounds);
+}
+
+// event handlers
+bboxMap.on("click", e => {
+    // look for closest bbox
+    url = osmnamesUrl + 'r/boundary/' + e.latlng.lng + '/' + e.latlng.lat + '.js'
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            city = data.results[0]
+            setBbox(city.boundingbox)
+            document.getElementById('city_search').value = city.name
+        });
+});
 bboxMap.on("editable:editing", e => {
     document.getElementById('bbox').value = bboxFeature.getBounds().toBBoxString();
 });

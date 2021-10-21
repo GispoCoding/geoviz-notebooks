@@ -27,7 +27,7 @@ class LeafletWidget(TextInput):
             'type': self.input_type,
             'autocomplete': 'off'
             }
-        city_name_html = 'Name of the city to analyze <input %s>' % self.html_params(**city_name_kwargs)
+        city_name_html = 'Type the name of the city, or click on the map to select a specific neighborhood <input %s>' % self.html_params(**city_name_kwargs)
 
         map_html = '<div id="bbox_map" style="width: 400 px; height: 400px"></div>'
         instructions_html = '<p>Adjust the bounding box on the map, if needed</p>'
