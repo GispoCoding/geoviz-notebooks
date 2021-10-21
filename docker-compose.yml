@@ -9,6 +9,11 @@ services:
       - ./server/:/app
       - ./notebooks/:/app/notebooks
       - ./datasets.py:/app/datasets.py
+      - ./models.py:/app/models.py
+    depends_on:
+      - postgis
+    environment:
+      - PGHOST=postgis
   serve:
     image: ghcr.io/linuxserver/swag
     container_name: swag

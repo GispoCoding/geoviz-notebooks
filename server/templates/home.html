@@ -3,6 +3,49 @@
 {% block content %}
     <div class="container">
         <h4>{{title}}</h1>
+        {% if running %}
+            <hr>
+            <div class="row analysis-list">
+                <p>Import and analysis is running at the moment. You may still start a new analysis, but running
+                multiple imports and analyses at the same time will slow down processing. This page does not update
+                automatically, reload the page or come back later to check if processing is finished.</p>
+                {% for analysis in analyses %}
+                    <div class="col s10">
+                        <div class="col s8">
+                            {{ analysis.name }}
+                        </div>
+                        <div class="col s2">
+                            {% if analysis.end_time %}
+                                <button>View results</button>
+                            {% else %}
+                                <span>
+                                    <div class="progress">
+                                        <div class="indeterminate"></div>
+                                    </div>
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="col s8">
+                            Started at {{ analysis.start_time }}
+                            {% if analysis.end_time %}
+                                Finished at {{ analysis.end_time }}
+                            {% endif %}
+                        </div>
+                        <div class="col s2">
+                            Running...
+                        </div>
+                    </div>
+                    <div class="col s2">
+                        {% if not analysis.end_time %}
+                            <button class="waves-effect waves-light btn">
+                                <i class="material-icons left">cancel</i>Cancel
+                            </button>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <hr>
+        {% endif %}
         <p>{{description}}</p>
         <div class="form-wrapper">
       
