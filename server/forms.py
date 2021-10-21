@@ -30,8 +30,8 @@ class LeafletWidget(TextInput):
         city_name_html = 'Name of the city to analyze <input %s>' % self.html_params(**city_name_kwargs)
 
         map_html = '<div id="bbox_map" style="width: 400 px; height: 400px"></div>'
-        instructions_html = '<p>Adjust the bounding box on the map or below, if needed.</p>'
-        bbox_html = '<input %s>' % self.html_params(name=field.name, **kwargs)
+        instructions_html = '<p>Adjust the bounding box on the map, if needed</p>'
+        bbox_html = '<input %s readonly>' % self.html_params(name=field.name, **kwargs)
         return HTMLString(map_html + city_name_html + instructions_html + bbox_html)
 
 
