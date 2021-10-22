@@ -9,6 +9,7 @@ from ipygis import get_connection_url
 from shapely.geometry import Point
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from typing import Tuple
 from geoalchemy2.shape import from_shape
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
@@ -17,9 +18,9 @@ from models import FlickrPoint
 
 class FlickrImporter(object):
 
-    def __init__(self, bbox: str):
+    def __init__(self, bbox: Tuple):
         # BBOX (minx, miny, maxx, maxy)
-        self.total_bbox = bbox
+        self.bbox_string = ",".join([str(coord) for coord in bbox])
         # save api key to env variable if found
         load_dotenv()
         self.flickr_api_key = os.getenv("FLICKR_API_KEY")
@@ -31,7 +32,7 @@ class FlickrImporter(object):
         FlickrPoint.__table__.create(engine, checkfirst=True)
 
     def run(self):
-        print(f'Running flick import with bbox {self.total_bbox}...')
+        print(f'Running flick import with bbox {self.bbox_string}...')
         # List for photos
         photos = []
 
@@ -94,7 +95,7 @@ class FlickrImporter(object):
                                 has_geo = 1,                # Get photos with geolocation
                                 min_taken_date = min_taken_date, 
                                 max_taken_date = max_taken_date,
-                                bbox = self.total_bbox,          # Specify geographical extent
+                                bbox = self.bbox_string,          # Specify geographical extent
                                 media = 'photos',           # Photos without video
                                 sort = 'date-taken-desc',   # Photos from latest
                                 privacy_filter =1,          # Public photos
@@ -146,19 +147,9 @@ class FlickrImporter(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Import Flickr data for given boundingbox")
     parser.add_argument("-bbox", default=None, help="Boundingbox to import")
-    parser.add_argument("-city", default='HEL', help="City to import")
     args = vars(parser.parse_args())
-    # BBOX (minx, miny, maxx, maxy) takes precedence over city
+    # BBOX (minx, miny, maxx, maxy)
     bbox = args["bbox"]
-    if not bbox:
-        city = args["city"]
-        # support old city parameter too
-        if city == 'COP':
-            bbox = '12.42000, 55.61000, 12.65000, 55.78000'
-        elif city == 'HEL':
-            bbox = '24.82345, 60.14084, 25.06404, 60.29496'
-        elif city == 'WAR':
-            bbox = '20.79057, 52.09901, 21.31300, 52.38502'
     if not bbox:
         raise AssertionError("You must specify a bounding box.")
     importer = FlickrImporter(bbox=bbox)

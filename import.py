@@ -94,7 +94,7 @@ if "flickr" in datasets:
     print(f"--- Importing Flickr data for {city} ---")
     # flickr wants the bbox as (minx, miny, maxx, maxy) string for now
     flick_importer = FlickrImporter(
-        bbox=",".join(bbox)
+        bbox=bbox
     )
     flick_importer.run()
 
