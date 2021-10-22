@@ -21,6 +21,13 @@ CONTINENTS = [
     "australia-oceania",
     "antarctica",
 ]
+# some countries are known in nominatim, osmextracts and geofabrik by different names
+# even with the same en language code :(
+# format is "nominatim-name": "pbf-name"
+COUNTRIES = {
+    "czechia": "czech-republic"
+}
+
 load_dotenv()
 osm_extracts_api_key = os.getenv("OSM_EXTRACTS_API_KEY")
 
