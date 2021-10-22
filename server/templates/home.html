@@ -87,12 +87,16 @@
                     </div>
                     <div class="col m12 l7">
                         <fieldset class="form-field">
-                            {{ form.bbox }}
+                            {{ form.bbox.map }}
+                            {{ form.bbox.city.label }}
+                            {{ form.bbox.city(autocomplete="off") }}
+                            {{ form.bbox.bbox.label }}
+                            {{ form.bbox.bbox(readonly=true) }}
                         </fieldset>
                     </div>
                 </div>
       
-                {{ form.import_button }}
+                {{ form.import_button(class="waves-effect waves-light btn")}}
       
             </form>
           </div>
