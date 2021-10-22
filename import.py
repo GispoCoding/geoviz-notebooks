@@ -77,12 +77,17 @@ print(f"{city} bounding box {bbox}")
 print(f"{city} centroid {centroid}")
 print(f"{city} country {country}")
 
+country = country.lower()
+# some countries are known in nominatim, osmextracts and geofabrik by different names
+if country in COUNTRIES:
+    country = COUNTRIES[country]
+
 # OSM data needs to be imported first, will create the database
 if "osm" in datasets:
     print(f"--- Importing OSM data for {city} ---")
     for continent in CONTINENTS:
         # Nominatim does not provide us with the continent. Will have to do some guessing
-        if not os.system(f"./scripts/import_osm.sh {continent} {country.lower()} \"{city.lower()}\" {osm_extracts_api_key}"):
+        if not os.system(f"./scripts/import_osm.sh {continent} {country} \"{city.lower()}\" {osm_extracts_api_key}"):
             break
 
 if "flickr" in datasets:
