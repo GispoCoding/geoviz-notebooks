@@ -2,7 +2,8 @@
 flickrapi
 GDAL==3.0.4  # GDAL>=3.1 doesn't build with docker: https://github.com/thinkWhere/GDAL-Docker/blob/develop/3.8-ubuntu/Dockerfile#L32
 geoalchemy2
-gtfs-functions
+# use our own gtfs fork until gtfs-functions is pandas v1 compatible
+git+https://github.com/GispoCoding/gtfs_functions.git
 h3
 jupyterlab
 osmnx

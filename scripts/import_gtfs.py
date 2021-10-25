@@ -37,10 +37,12 @@ DATA_PATH = "data"
 
 
 class GTFSImporter(object):
-    def __init__(self, city: str, url: str = ""):
+    def __init__(self, city: str, url: str = "", bbox: list = None):
         if not city:
             raise AssertionError("You must specify the city name.")
         self.city = city
+        # optional bbox allows filtering gtfs layer
+        self.bbox = bbox
         if url:
             self.url = url
         else:
@@ -65,16 +67,31 @@ class GTFSImporter(object):
 
         print("Loading gtfs zip...")
         routes, stops, stop_times, trips, shapes = import_gtfs(filename)
+
+        # only analyze stops within bbox, to cut down processing time
+        # luckily, we have nifty bbox filtering available for geodataframes
+        # https://geopandas.org/docs/user_guide/indexing.html
+        if self.bbox:
+            print("Filtering gtfs data with bbox...")
+            print(self.bbox)
+            stops = stops.cx[self.bbox[0]:self.bbox[2], self.bbox[1]:self.bbox[3]]
+            stop_times = stop_times.cx[self.bbox[0]:self.bbox[2], self.bbox[1]:self.bbox[3]]
+
         # only calculate average daily frequency for all stops for now
         cutoffs = [0, 24]
+        print("Calculating stop frequencies...")
         stop_frequencies = stops_freq(stop_times, stops, cutoffs)
         # only consider outbound departures for now
-        stop_frequencies = stop_frequencies.loc[
+        outbound_frequencies = stop_frequencies.loc[
             stop_frequencies["dir_id"] == "Outbound"
         ].to_dict(orient="records")
+        # Some feeds don't have two directions. In that case, all
+        # stops are inbound
+        if not outbound_frequencies:
+            outbound_frequencies = stop_frequencies.to_dict(orient="records")
         stops_to_save = {}
-        print(f"Found {len(stop_frequencies)} GTFS stops, importing...")
-        for stop in stop_frequencies:
+        print(f"Found {len(outbound_frequencies)} GTFS stops, importing...")
+        for stop in outbound_frequencies:
             stop_id = stop.pop("stop_id")
             geom = from_shape(stop.pop("geometry"), srid=4326)
             # use dict, since the json may contain the same stop twice!
