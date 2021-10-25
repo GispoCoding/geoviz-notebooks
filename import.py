@@ -43,7 +43,7 @@ parser.add_argument("--bbox", help="Use different bbox for the city. Format \"mi
 args = vars(parser.parse_args())
 city = args["city"]
 datasets = args["datasets"].split()
-gtfs_url = args.get("gtfs_url", None)
+gtfs_url = args.get("gtfs", None)
 bbox = args.get("bbox", None)
 print(f"--- Importing datasets {datasets} for {city} ---")
 
