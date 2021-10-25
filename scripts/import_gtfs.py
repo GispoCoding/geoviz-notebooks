@@ -37,13 +37,13 @@ DATA_PATH = "data"
 
 
 class GTFSImporter(object):
-    def __init__(self, city: str = "", url: str = ""):
-        if not city and not url:
-            raise AssertionError("You must specify a city or GTFS feed url.")
+    def __init__(self, city: str, url: str = ""):
+        if not city:
+            raise AssertionError("You must specify the city name.")
+        self.city = city
         if url:
             self.url = url
         else:
-            self.city = city
             self.url = GTFS_DATASETS.get(city, None)
 
         sql_url = get_connection_url(dbname="geoviz")

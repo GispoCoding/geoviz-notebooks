@@ -102,7 +102,7 @@ if "gtfs" in datasets:
     # GTFS importer uses the provided URL or, failing that, default values for some cities
     if gtfs_url:
         print(f"--- Importing GTFS data from {gtfs_url} ---")
-        gtfs_importer = GTFSImporter(url=gtfs_url)
+        gtfs_importer = GTFSImporter(url=gtfs_url, city=city)
     else:
         print(f"--- Importing GTFS data for {city} ---")
         gtfs_importer = GTFSImporter(city=city)
