@@ -3,6 +3,7 @@ Flask
 Flask-HTTPAuth
 flask-wtf
 geoalchemy2
+psycopg2-binary
 python-dotenv
 python-slugify
 sqlalchemy
