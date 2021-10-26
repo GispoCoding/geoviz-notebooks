@@ -4,3 +4,4 @@ Flask-HTTPAuth
 flask-wtf
 python-dotenv
 python-slugify
+sqlalchemy
