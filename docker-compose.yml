@@ -57,6 +57,7 @@ services:
     ports:
       - 8888:8888
     depends_on:
+      - osmnames
       - postgis
     stdin_open: true # docker run -i
     tty: true        # docker run -t
