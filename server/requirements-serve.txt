@@ -4,6 +4,3 @@ Flask-HTTPAuth
 flask-wtf
 python-dotenv
 python-slugify
-
-# Our GIS tools
-git+https://github.com/GispoCoding/ipygis.git

@@ -4,7 +4,7 @@ import sys
 from dotenv import load_dotenv
 from flask import Flask, render_template, send_from_directory
 from flask_httpauth import HTTPBasicAuth
-from ipygis import get_connection_url
+#from ipygis import get_connection_url
 from slugify import slugify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -26,7 +26,8 @@ if not secret_key:
     secret_key = secrets.token_bytes(64)
 app.config['SECRET_KEY'] = secret_key
 
-sql_url = get_connection_url(dbname="geoviz")
+sql_url = f"postgresql://{os.environ.get('PGUSER', 'postgres')}:{os.environ.get('PGPASSWORD', '')}@{os.environ.get('PGHOST', 'localhost')}:{int(os.environ.get('PGPORT', '5432'))}/geoviz"
+#sql_url = get_connection_url(dbname="geoviz")
 engine = create_engine(sql_url)
 session = sessionmaker(bind=engine)()
 Analysis.__table__.create(engine, checkfirst=True)
