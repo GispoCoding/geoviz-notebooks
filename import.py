@@ -30,6 +30,7 @@ COUNTRIES = {
 
 load_dotenv()
 osm_extracts_api_key = os.getenv("OSM_EXTRACTS_API_KEY")
+osmnames_url = os.getenv("OSMNAMES_URL")
 
 parser = argparse.ArgumentParser(description="Import all datasets for a given city")
 parser.add_argument("city", default="Helsinki", help="City to import")
@@ -47,34 +48,50 @@ gtfs_url = args.get("gtfs", None)
 bbox = args.get("bbox", None)
 print(f"--- Importing datasets {datasets} for {city} ---")
 
-# Get bbox, centroid and country for the city
-city_params = {"q": args["city"], "limit": 1, "format": "json"}
-city_data = requests.get(
-    "https://nominatim.openstreetmap.org/search", params=city_params
-).json()[0]
-if bbox:
-    bbox = bbox.split()
+if osmnames_url:
+    print("Geocode using OSMNames...")
+    # Use our own geocoding service. It provides bbox and country for city.
+    print(osmnames_url)
+    print(city)
+    city_data = requests.get(
+        f"{osmnames_url}/q/{city}.js"
+    ).json()["results"][0]
+    if bbox:
+        bbox = bbox.split()
+    else:
+        bbox = city_data["boundingbox"]
+    country = city_data["country"]
 else:
-    # nominatim returns miny, maxy, minx, maxx
-    # we want minx, miny, maxx, maxy
-    bbox = [city_data["boundingbox"][i] for i in [2, 0, 3, 1]]
-bbox = [float(coord) for coord in bbox]
-centroid = [city_data["lon"], city_data["lat"]]
+    print("Geocode using Nominatim...")
+    # Fall back to Nominatim. Their API doesn't always respond tho.
+    # Get bbox, centroid and country for the city
+    city_params = {"q": args["city"], "limit": 1, "format": "json"}
+    city_data = requests.get(
+        "https://nominatim.openstreetmap.org/search", params=city_params
+    ).json()[0]
+    if bbox:
+        bbox = bbox.split()
+    else:
+        # nominatim returns miny, maxy, minx, maxx
+        # we want minx, miny, maxx, maxy
+        bbox = [city_data["boundingbox"][i] for i in [2, 0, 3, 1]]
+    bbox = [float(coord) for coord in bbox]
+    centroid = [city_data["lon"], city_data["lat"]]
+    print(f"{city} centroid {centroid}")
 
-country_params = {
-    "lat": centroid[1],
-    "lon": centroid[0],
-    "zoom": 3,
-    "format": "json",
-    "namedetails": 1,
-}
-country_data = requests.get(
-    "https://nominatim.openstreetmap.org/reverse", params=country_params
-).json()
-country = country_data["namedetails"]["name:en"]
+    country_params = {
+        "lat": centroid[1],
+        "lon": centroid[0],
+        "zoom": 3,
+        "format": "json",
+        "namedetails": 1,
+    }
+    country_data = requests.get(
+        "https://nominatim.openstreetmap.org/reverse", params=country_params
+    ).json()
+    country = country_data["namedetails"]["name:en"]
 
 print(f"{city} bounding box {bbox}")
-print(f"{city} centroid {centroid}")
 print(f"{city} country {country}")
 
 country = country.lower()
@@ -102,10 +119,10 @@ if "gtfs" in datasets:
     # GTFS importer uses the provided URL or, failing that, default values for some cities
     if gtfs_url:
         print(f"--- Importing GTFS data from {gtfs_url} ---")
-        gtfs_importer = GTFSImporter(url=gtfs_url, city=city)
+        gtfs_importer = GTFSImporter(url=gtfs_url, city=city, bbox=bbox)
     else:
         print(f"--- Importing GTFS data for {city} ---")
-        gtfs_importer = GTFSImporter(city=city)
+        gtfs_importer = GTFSImporter(city=city, bbox=bbox)
     gtfs_importer.run()
 
 if "access" in datasets:
