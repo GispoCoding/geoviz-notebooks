@@ -51,7 +51,7 @@ services:
     volumes:
       - .:/home/jovyan
     ports:
-      - 8888:8888
+      - "127.0.0.1:8888:8888"
     depends_on:
       - osmnames
       - postgis
