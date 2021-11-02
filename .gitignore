@@ -132,3 +132,15 @@ dmypy.json
 *.env
 .local/
 server/swag/
+
+# Development and project data files
+.DS_Store
+.bash_history
+.flickr/
+.jupyter/
+.python_history
+.vscode/
+cache/
+data/
+pgdata/
+osm2pgsql/
