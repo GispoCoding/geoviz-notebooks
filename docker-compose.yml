@@ -3,14 +3,14 @@ services:
     image: klokantech/osmnames-sphinxsearch
     container_name: osmnames
   flask:
-    image: tiangolo/uwsgi-nginx-flask:python3.8
+    build:
+      context: .
+      target: geoviz-server
     container_name: flask
     volumes:
-      - ./server/:/app
-      - ./notebooks/:/app/notebooks
-      - ./datasets.py:/app/datasets.py
-      - ./models.py:/app/models.py
+      - /tmp/flask:/tmp/flask
     depends_on:
+      - osmnames
       - postgis
     environment:
       - PGHOST=postgis
@@ -30,12 +30,12 @@ services:
       - DNSPLUGIN=route53
     volumes:
       - ./server/swag/:/config
+      - /tmp/flask/uwsgi.sock:/tmp/flask/uwsgi.sock
     ports:
       - 443:443
       - 80:80
     depends_on:
       - flask
-      - osmnames
     restart: always
   postgis:
     image: postgis/postgis
@@ -48,7 +48,9 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_PASSWORD=postgres
   notebook:
-    image: gispo/geoviz-notebook
+    build:
+      context: .
+      target: geoviz-notebook
     container_name: notebook
     volumes:
       - .:/home/jovyan

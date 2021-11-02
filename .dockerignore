@@ -4,4 +4,3 @@ cache
 data
 osm2pgsql
 pgdata
-server
