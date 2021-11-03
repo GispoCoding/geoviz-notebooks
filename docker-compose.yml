@@ -25,7 +25,7 @@ services:
       - PGID=1000
       - TZ=Europe/Helsinki
       - URL=gispocoding.fi
-      - SUBDOMAINS=geoviz,
+      - SUBDOMAINS=geoviz,geoviz-test
       - VALIDATION=dns
       - DNSPLUGIN=route53
     volumes:
