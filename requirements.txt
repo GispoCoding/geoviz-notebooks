@@ -13,6 +13,7 @@ pandas
 psycopg2-binary
 pyshp
 python-dotenv
+python-slugify
 requests
 sqlalchemy>1.4
 
