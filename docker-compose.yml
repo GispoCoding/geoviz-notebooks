@@ -9,6 +9,7 @@ services:
     container_name: flask
     volumes:
       - /tmp/flask:/tmp/flask
+      - ./data:/app/data
     depends_on:
       - osmnames
       - postgis
