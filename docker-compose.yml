@@ -3,9 +3,7 @@ services:
     image: klokantech/osmnames-sphinxsearch
     container_name: osmnames
   flask:
-    build:
-      context: .
-      target: geoviz-server
+    image: gispo/geoviz-server
     container_name: flask
     volumes:
       - /tmp/flask:/tmp/flask
@@ -49,9 +47,7 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_PASSWORD=postgres
   notebook:
-    build:
-      context: .
-      target: geoviz-notebook
+    image: gispo/geoviz-notebook
     container_name: notebook
     volumes:
       - .:/home/jovyan
