@@ -51,7 +51,7 @@ jobs:
           file: ./Dockerfile
           push: true
           target: geoviz-notebook
-          tags: ${{secrets.DOCKERHUB_USERNAME}}/geoviz-notebook:latest
+          tags: gispo/geoviz-notebook:latest
       - name: Build and Push Server
         if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v2
@@ -60,7 +60,7 @@ jobs:
           file: ./Dockerfile
           push: true
           target: geoviz-server
-          tags: ${{secrets.DOCKERHUB_USERNAME}}/geoviz-server:latest
+          tags: gispo/geoviz-server:latest
       
       # - name: Push Images to DockerHub
       #   if: github.ref == 'refs/heads/main'
