@@ -1,6 +1,4 @@
-ARG BASE_CONTAINER=gispo/minimal-notebook
-# hadolint ignore=DL3006
-FROM $BASE_CONTAINER AS common
+FROM gispo/minimal-notebook AS common
 LABEL maintainer="gispo<info@gispo.fi>"
 
 USER root
