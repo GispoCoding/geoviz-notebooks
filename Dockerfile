@@ -28,6 +28,10 @@ RUN cmake .. \
 COPY requirements.txt /tmp/
 RUN pip install --no-cache-dir --upgrade -r /tmp/requirements.txt
 
+# Add js files required for interactive Kepler
+RUN jupyter nbextension install --py --sys-prefix keplergl \
+    && nbextension enable --py --sys-prefix keplergl
+
 # Build just the notebook part
 FROM common AS geoviz-notebook
 WORKDIR "${HOME}"
