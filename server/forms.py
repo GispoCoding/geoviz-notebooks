@@ -6,7 +6,7 @@ from sqlalchemy.sql.sqltypes import String
 from wtforms import Field, FormField, SelectMultipleField, StringField, SubmitField
 from wtforms.fields.core import Field
 from wtforms.validators import DataRequired, Length, URL
-from wtforms.widgets import html_params, CheckboxInput, HTMLString, ListWidget
+from wtforms.widgets import html_params, CheckboxInput, ListWidget
 
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
@@ -15,7 +15,7 @@ from datasets import DATASETS
 
 class LeafletWidget(object):
     def __call__(self, field, **kwargs):
-        return HTMLString('<div id="bbox_map" style="width: 400 px; height: 400px"></div><br>')
+        return Markup('<div id="bbox_map" style="width: 400 px; height: 400px"></div><br>')
 
 
 class CheckboxListWidget(ListWidget):
