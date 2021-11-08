@@ -83,7 +83,7 @@ class AnalysisForm(FlaskForm):
     )
     gtfs_url = StringField(
         'GTFS feed location for the city',
-        [Optional, URL(message='Please input a valid GTFS URL.')]
+        [Optional(), URL(message='Please input a valid GTFS URL.')]
     )
     flickr_apikey = StringField('API key for flickr API')
     mapbox_apikey = StringField('API key for Mapbox')
