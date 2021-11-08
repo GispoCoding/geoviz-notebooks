@@ -15,7 +15,6 @@ pyshp
 python-dotenv
 python-slugify
 requests
-Shapely!=1.8  # Shapely 1.8 causes spurious deprecation warnings: https://github.com/Toblerity/Shapely/issues/1096
 sqlalchemy>1.4
 
 # Our GIS tools
