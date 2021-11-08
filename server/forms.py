@@ -5,7 +5,7 @@ from markupsafe import Markup
 from sqlalchemy.sql.sqltypes import String
 from wtforms import Field, FormField, SelectMultipleField, StringField, SubmitField
 from wtforms.fields.core import Field
-from wtforms.validators import DataRequired, Length, URL
+from wtforms.validators import DataRequired, Length, Optional, URL
 from wtforms.widgets import html_params, CheckboxInput, ListWidget
 
 # test simple import now, convert to module later
@@ -76,7 +76,7 @@ class AnalysisForm(FlaskForm):
     )
     gtfs_url = StringField(
         'GTFS feed location for the city',
-        [URL(message='Please input a valid GTFS URL.')]
+        [Optional, URL(message='Please input a valid GTFS URL.')]
     )
     flickr_apikey = StringField('API key for flickr API')
     mapbox_apikey = StringField('API key for Mapbox')
