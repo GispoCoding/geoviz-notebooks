@@ -65,13 +65,20 @@ class LeafletField(Field):
 
 class CitySelectionForm(FlaskForm):
     map = LeafletField()
-    city = StringField('Type the name of the city, or click on the map to select a specific neighborhood')
-    bbox = StringField('Adjust the bounding box on the map, if needed')
+    city = StringField(
+        'Type the name of the city, or click on the map to select a specific neighborhood',
+        [DataRequired]
+        )
+    bbox = StringField(
+        'Adjust the bounding box on the map, if needed',
+        [DataRequired]
+        )
 
 
 class AnalysisForm(FlaskForm):
     dataset_selection = MultiCheckboxField(
         'Select data to include in the analysis',
+        [DataRequired],
         choices=DATASETS
     )
     gtfs_url = StringField(
