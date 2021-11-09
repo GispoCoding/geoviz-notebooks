@@ -140,6 +140,7 @@ server/swag/
 .jupyter/
 .python_history
 .vscode/
+.idea
 cache/
 data/
 logs/
