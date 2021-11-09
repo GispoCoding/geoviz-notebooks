@@ -58,12 +58,18 @@ parser.add_argument("--datasets",
                     help="Datasets to import. Default is to import all. E.g. \"osm access kontur\""
                     )
 parser.add_argument("--bbox", help="Use different bbox for the city. Format \"minx miny maxx maxy\"")
+parser.add_argument("--export",
+                    action="store_true",
+                    default=False,
+                    help="Automatically run analysis and create result map at the end of import.",
+                    )
 
 args = vars(parser.parse_args())
 city = args["city"]
 datasets = args["datasets"].split()
 gtfs_url = args.get("gtfs", None)
 bbox = args.get("bbox", None)
+export = args.get("export", False)
 print(f"--- Importing datasets {datasets} for {city} ---")
 
 if osmnames_url:
@@ -160,44 +166,44 @@ if "osm" in datasets:
 
 if "flickr" in datasets:
     print(f"--- Importing Flickr data for {city} ---")
-    # flickr wants the bbox as (minx, miny, maxx, maxy) string for now
-    flick_importer = FlickrImporter(
-        bbox=bbox
-    )
+    flick_importer = FlickrImporter(slug=slug, bbox=bbox)
     flick_importer.run()
+    mark_imported("flickr")
 
 if "gtfs" in datasets:
     # GTFS importer uses the provided URL or, failing that, default values for some cities
     if gtfs_url:
         print(f"--- Importing GTFS data from {gtfs_url} ---")
-        gtfs_importer = GTFSImporter(url=gtfs_url, city=city, bbox=bbox)
+        gtfs_importer = GTFSImporter(slug=slug, url=gtfs_url, city=city, bbox=bbox)
     else:
         print(f"--- Importing GTFS data for {city} ---")
-        gtfs_importer = GTFSImporter(city=city, bbox=bbox)
+        gtfs_importer = GTFSImporter(slug=slug, city=city, bbox=bbox)
     gtfs_importer.run()
+    mark_imported("gtfs")
 
 if "access" in datasets:
     print(f"--- Importing OSM walkability & accessibility data for {city} ---")
-    # osmnx wants the bbox as minx, miny, maxx, maxy floats for now
-    accessibility_importer = AccessibilityImporter(*bbox)
+    accessibility_importer = AccessibilityImporter(slug=slug, bbox=bbox)
     accessibility_importer.run()
+    mark_imported("access")
 
 if "ookla" in datasets:
     print(f"--- Importing Ookla speedtest data for {city} ---")
-    # ookla importer wants the bbox as minx, miny, maxx, maxy floats for now
-    ookla_importer = OoklaImporter(
-        city=city,
-        bbox=bbox
-    )
+    ookla_importer = OoklaImporter(slug=slug, city=city, bbox=bbox)
     ookla_importer.run()
+    mark_imported("ookla")
 
 if "kontur" in datasets:
     print(f"--- Importing Kontur population data for {city} ---")
-    # kontur importer wants the bbox as minx, miny, maxx, maxy floats for now
-    kontur_importer = KonturImporter(
-        city=city,
-        bbox=bbox
-    )
+    kontur_importer = KonturImporter(slug=slug, city=city, bbox=bbox)
     kontur_importer.run()
+    mark_imported("kontur")
 
 print(f"--- Datasets {datasets} for {city} imported to PostGIS ---")
+if export:
+    print(f"--- Creating result map for {city} ---")
+    export_path = os.path.join(os.path.dirname(__loader__.path), "export.sh")
+    os.system(export_path)
+
+analysis.finish_time = datetime.datetime.now()
+session.commit()
