@@ -12,28 +12,28 @@ local tables = {}
 tables.points = osm2pgsql.define_node_table('osmpoints', {
     { column = 'tags', type = 'jsonb' },
     { column = 'geom', type = 'point', projection = srid },
-})
+}, { schema = 'city_specific_schema' })
 
 tables.lines = osm2pgsql.define_way_table('osmlines', {
     { column = 'tags', type = 'jsonb' },
     { column = 'geom', type = 'linestring', projection = srid },
-})
+}, { schema = 'city_specific_schema' })
 
 tables.polygons = osm2pgsql.define_area_table('osmpolygons', {
     { column = 'tags', type = 'jsonb' },
     { column = 'geom', type = 'geometry', projection = srid },
     { column = 'area', type = 'area' },
-})
+}, { schema = 'city_specific_schema' })
 
 tables.routes = osm2pgsql.define_relation_table('osmroutes', {
     { column = 'tags', type = 'jsonb' },
     { column = 'geom', type = 'multilinestring', projection = srid },
-})
+}, { schema = 'city_specific_schema' })
 
 tables.boundaries = osm2pgsql.define_relation_table('osmboundaries', {
     { column = 'tags', type = 'jsonb' },
     { column = 'geom', type = 'multilinestring', projection = srid },
-})
+}, { schema = 'city_specific_schema' })
 
 -- These tag keys are generally regarded as useless for most rendering. Most
 -- of them are from imports or intended as internal information for mappers.

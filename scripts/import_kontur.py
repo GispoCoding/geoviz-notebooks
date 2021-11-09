@@ -42,8 +42,13 @@ class KonturImporter(object):
 
         sql_url = get_connection_url(dbname="geoviz")
         engine = create_engine(sql_url)
-        self.session = sessionmaker(bind=engine)()
-        KonturPoint.__table__.create(engine, checkfirst=True)
+        # TODO: prevent injection by schema slug. just
+        # check if schema exists (e.g. public) and crash
+        schema_engine = engine.execution_options(
+            schema_translate_map={'schema': slug}
+        )
+        self.session = sessionmaker(bind=schema_engine)()
+        KonturPoint.__table__.create(schema_engine)
 
     def run(self):
         if os.path.isfile(self.download_file):

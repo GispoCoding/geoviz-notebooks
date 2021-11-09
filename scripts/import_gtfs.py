@@ -51,8 +51,11 @@ class GTFSImporter(object):
 
         sql_url = get_connection_url(dbname="geoviz")
         engine = create_engine(sql_url)
-        self.session = sessionmaker(bind=engine)()
-        GTFSStop.__table__.create(engine, checkfirst=True)
+        schema_engine = engine.execution_options(
+            schema_translate_map={'schema': slug}
+        )
+        self.session = sessionmaker(bind=schema_engine)()
+        GTFSStop.__table__.create(schema_engine)
 
     def run(self):
         if not self.url:

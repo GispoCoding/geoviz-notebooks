@@ -36,15 +36,19 @@ else
     INPUT_FILE=$2.osm.pbf
 fi
 
-# only create the database if missing
-if createdb geoviz; then
-    psql -d geoviz -c "create extension postgis;"
-    osm2pgsql -d geoviz -O flex $INPUT_FILE -S $SCRIPTPATH/flex-config/generic.lua --slim
-else
-    osm2pgsql -d geoviz -O flex $INPUT_FILE -S $SCRIPTPATH/flex-config/generic.lua --slim --append
-fi
+createdb geoviz
+# use separate schema for each city
+psql -d geoviz -c "create schema $3;"
+# now injecting the variable schema name to osm2pgsql config is ugly
+sed "s/city_specific_schema/$3/" $SCRIPTPATH/flex-config/generic.lua > config.lua.tmp
+osm2pgsql -d geoviz -O flex $INPUT_FILE -S config.lua.tmp --slim
 
 # Finally, osm2pgsql saves polygons and points in separate tables. Do some postprocessing to get
 # all data we want in point table
 echo "Postprocessing OSM tables..."
-psql -d geoviz < $SCRIPTPATH/post_import.sql
+# add primary key to prevent duplicate imports
+psql -d geoviz -c "alter table $3.osmpoints add primary key (node_id);"
+# add polygon centroids as points; only add points not existing yet
+psql -d geoviz -c "insert into $3.osmpoints (
+    select -area_id as node_id, tags, st_centroid(geom) as geom from $3.osmpolygons
+) on conflict (node_id) do nothing;"

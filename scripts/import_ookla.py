@@ -43,8 +43,11 @@ class OoklaImporter(object):
 
         sql_url = get_connection_url(dbname="geoviz")
         engine = create_engine(sql_url)
-        self.session = sessionmaker(bind=engine)()
-        OoklaPoint.__table__.create(engine, checkfirst=True)
+        schema_engine = engine.execution_options(
+            schema_translate_map={'schema': slug}
+        )
+        self.session = sessionmaker(bind=schema_engine)()
+        OoklaPoint.__table__.create(schema_engine)
 
     def run(self):
         if os.path.isfile(self.download_file):
