@@ -18,7 +18,9 @@ from models import FlickrPoint
 
 class FlickrImporter(object):
 
-    def __init__(self, bbox: Tuple):
+    def __init__(self, slug: str, bbox: Tuple):
+        if not slug:
+            raise AssertionError("You must specify the city name.")
         # BBOX (minx, miny, maxx, maxy)
         self.bbox_string = ",".join([str(coord) for coord in bbox])
         # save api key to env variable if found

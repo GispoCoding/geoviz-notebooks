@@ -23,7 +23,9 @@ DATA_PATH = "data"
 
 class OoklaImporter(object):
 
-    def __init__(self, city: str, bbox: Tuple):
+    def __init__(self, slug: str, city: str, bbox: Tuple):
+        if not city or not slug:
+            raise AssertionError("You must specify the city name.")
         # BBOX (minx, miny, maxx, maxy)
         self.bbox = bbox
         self.city = city

@@ -1,15 +1,12 @@
 import argparse
 import sys
-import csv
-import geopandas as gpd
 import osmnx as ox
 import pandana
 from ipygis import get_connection_url
 from shapely.geometry import Point
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import NoResultFound
-from typing import Optional
+from typing import Optional, Tuple
 from geoalchemy2.shape import from_shape
 
 # test simple import now, convert to module later
@@ -19,18 +16,10 @@ from osm_tags import tags_to_filter
 
 
 class AccessibilityImporter(object):
-    def __init__(
-        self,
-        minx: float,
-        miny: float,
-        maxx: float,
-        maxy: float,
-        city: Optional[str] = None,
-    ):
-        self.minx = minx
-        self.miny = miny
-        self.maxx = maxx
-        self.maxy = maxy
+    def __init__(self, slug: str, bbox: Tuple, city: Optional[str] = None):
+        if not slug:
+            raise AssertionError("You must specify the city name.")
+        (self.minx, self.miny, self.maxx, self.maxy) = bbox
         self.city = city
 
         sql_url = get_connection_url(dbname="geoviz")

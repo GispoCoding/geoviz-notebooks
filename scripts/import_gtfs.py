@@ -9,6 +9,7 @@ from shapely.geometry import Point
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from geoalchemy2.shape import from_shape
+from typing import List
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
 from models import GTFSStop
@@ -37,8 +38,8 @@ DATA_PATH = "data"
 
 
 class GTFSImporter(object):
-    def __init__(self, city: str, url: str = "", bbox: list = None):
-        if not city:
+    def __init__(self, slug: str, city: str, url: str = "", bbox: List[float] = None):
+        if not city or not slug:
             raise AssertionError("You must specify the city name.")
         self.city = city
         # optional bbox allows filtering gtfs layer
