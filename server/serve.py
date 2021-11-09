@@ -1,11 +1,11 @@
 import os
 import secrets
+import subprocess
 import sys
 from dotenv import load_dotenv
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, redirect, render_template, send_from_directory
 from flask_httpauth import HTTPBasicAuth
-#from ipygis import get_connection_url
-from slugify import slugify
+from geoalchemy2.shape import from_shape
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from werkzeug.security import check_password_hash
@@ -55,25 +55,38 @@ def send_static_file(file):
 @auth.login_required
 def home():
     # our fancy UI
-    running = False
     form = AnalysisForm()
     if form.validate_on_submit():
-        running = True
-        print(form.bbox.data)
-        city_name = form.bbox.data
-        # analysis = Analysis(
-        #     slug = slugify(form.)
-        # )
-    unfinished_analyses = session.query(Analysis).filter(Analysis.viewed.is_(False)).all()
-    if unfinished_analyses:
-        running = True
+        city_name = form.bbox.form.city.data
+        gtfs_url = form.gtfs_url.data
+        bbox_string = " ".join(form.bbox.form.bbox.data.split(","))
+        dataset_string = " ".join(form.dataset_selection.data)
+        # this should be safe, as shell injections are not possible with Popen
+        # and Flask has sanitized the field inputs?
+        process = subprocess.Popen([
+            "../import.py",
+            city_name,
+            "--datasets",
+            dataset_string,
+            "--bbox",
+            bbox_string,
+            "--gtfs",
+            gtfs_url,
+            "--export"
+        ])
+        # TODO: wait 0.1 before redirect to display analysis to the user?
+        return redirect('/')
+    unviewed_analyses = session.query(Analysis).filter(Analysis.viewed.is_(False)).all()
+    running_analyses = session.query(Analysis).filter(Analysis.finish_time.is_(None)).all()
+
+    print(form.errors)
     return render_template(
         'home.html',
         title="Gispo Spatial Analytics",
         description="Import urban datasets and run analyses.",
         form=form,
-        running=running,
-        analyses=unfinished_analyses
+        running=running_analyses,
+        analyses=unviewed_analyses
     )
 
 

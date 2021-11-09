@@ -67,18 +67,18 @@ class CitySelectionForm(FlaskForm):
     map = LeafletField()
     city = StringField(
         'Type the name of the city, or click on the map to select a specific neighborhood',
-        [DataRequired()]
+        [DataRequired(message='Please select a city to run analysis on.')]
         )
     bbox = StringField(
         'Adjust the bounding box on the map, if needed',
-        [DataRequired()]
+        [DataRequired(message='Please select a city to run analysis on.')]
         )
 
 
 class AnalysisForm(FlaskForm):
     dataset_selection = MultiCheckboxField(
         'Select data to include in the analysis',
-        [DataRequired()],
+        [DataRequired(message='Please select at least one dataset to use.')],
         choices=DATASETS
     )
     gtfs_url = StringField(
