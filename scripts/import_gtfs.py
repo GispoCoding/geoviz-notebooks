@@ -57,7 +57,12 @@ class GTFSImporter(object):
         if not self.url:
             print(f"GTFS data not found for {self.city}, skipping.")
             return
-        filename = f"{DATA_PATH}/{self.city}.gtfs.zip"
+        # data should be stored one directory level above importers
+        filename = os.path.join(
+            os.path.dirname(os.path.dirname(__loader__.path)),
+            DATA_PATH,
+            f"{self.city}.gtfs.zip"
+        )
         if os.path.isfile(filename):
             print("Found saved gtfs zip...")
         else:

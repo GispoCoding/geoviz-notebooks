@@ -29,8 +29,14 @@ class OoklaImporter(object):
         self.city = city
         self.download_url = "https://ookla-open-data.s3.amazonaws.com/shapefiles/performance/type=fixed/year=2021/quarter=1/"
         self.download_name = "2021-01-01_performance_fixed_tiles"
-        self.download_file = f"{DATA_PATH}/{self.download_name}.zip"
-        self.unzipped_path = f"{DATA_PATH}/{self.download_name}"
+
+        # data should be stored one directory level above importers
+        self.unzipped_path = os.path.join(
+            os.path.dirname(os.path.dirname(__loader__.path)),
+            DATA_PATH,
+            self.download_name
+        )
+        self.download_file = self.unzipped_path + ".zip"
         self.city_file = f"{self.unzipped_path}/{self.city}.shp"
 
         sql_url = get_connection_url(dbname="geoviz")

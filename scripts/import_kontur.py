@@ -28,8 +28,14 @@ class KonturImporter(object):
         self.city = city
         self.download_url = "https://adhoc.kontur.io/data/"
         self.download_name = "kontur_population_20200928.gpkg"
-        self.download_file = f"{DATA_PATH}/{self.download_name}.gz"
-        self.unzipped_file = f"{DATA_PATH}/{self.download_name}"
+
+        # data should be stored one directory level above importers
+        self.unzipped_file = os.path.join(
+            os.path.dirname(os.path.dirname(__loader__.path)),
+            DATA_PATH,
+            self.download_name
+        )
+        self.download_file = self.unzipped_file + ".gz"
         self.city_file = f"{self.unzipped_file}_extracts/{self.city}.gpkg"
 
         sql_url = get_connection_url(dbname="geoviz")

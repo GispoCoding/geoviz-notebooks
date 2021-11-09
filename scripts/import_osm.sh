@@ -4,6 +4,10 @@
 SCRIPT=`realpath $0`
 SCRIPTPATH=$(dirname "$SCRIPT")
 DATA_PATH="data"
+
+# data should be stored one directory level above importers
+cd $SCRIPTPATH
+cd ..
 mkdir $DATA_PATH
 cd $DATA_PATH
 

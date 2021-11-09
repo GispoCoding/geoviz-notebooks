@@ -1,15 +1,27 @@
 #!/usr/bin/env python
 
 import argparse
+import copy
+import datetime
 import os
 import requests
 from dotenv import load_dotenv
 from datasets import DATASETS
+from geoalchemy2.shape import from_shape
+from ipygis import get_connection_url
+from inspect import getsourcefile
+#from os.path import abspath
 from scripts.import_flickr import FlickrImporter
 from scripts.import_gtfs import GTFSImporter
 from scripts.import_kontur import KonturImporter
 from scripts.import_ookla import OoklaImporter
 from scripts.import_osm_accessibility import AccessibilityImporter
+from shapely.geometry import box
+from slugify import slugify
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from models import Analysis
 
 CONTINENTS = [
     "europe",
@@ -27,6 +39,12 @@ CONTINENTS = [
 COUNTRIES = {
     "czechia": "czech-republic"
 }
+
+# save all analysis requests to the db
+sql_url = get_connection_url(dbname="geoviz")
+engine = create_engine(sql_url)
+session = sessionmaker(bind=engine)()
+Analysis.__table__.create(engine, checkfirst=True)
 
 load_dotenv()
 osm_extracts_api_key = os.getenv("OSM_EXTRACTS_API_KEY")
@@ -75,7 +93,6 @@ else:
         # nominatim returns miny, maxy, minx, maxx
         # we want minx, miny, maxx, maxy
         bbox = [city_data["boundingbox"][i] for i in [2, 0, 3, 1]]
-    bbox = [float(coord) for coord in bbox]
     centroid = [city_data["lon"], city_data["lat"]]
     print(f"{city} centroid {centroid}")
 
@@ -91,6 +108,37 @@ else:
     ).json()
     country = country_data["namedetails"]["name:en"]
 
+# bbox must always be float
+bbox = [float(coord) for coord in bbox]
+
+# TODO: what to do if there is an analysis for the city already?
+# 1) use another slug or
+# 2) prevent run or
+# 3) overwrite analysis? maybe ask the user.
+
+# save all analysis requests to the db
+slug=slugify(city)
+analysis = Analysis(
+    slug=slug,
+    name=city,
+    bbox=from_shape(box(*[float(coord) for coord in bbox])),
+    # mark datasets like {selected: ['osm', 'flickr'], imported: ['osm']}
+    datasets={"selected": datasets, "imported": []},
+    # mark params like {gtfs: {url: http://example.com}}
+    parameters={'gtfs': {'url': gtfs_url}}
+)
+session.add(analysis)
+session.commit()
+
+
+# save analysis progress to the db as well
+def mark_imported(dataset: str):
+    # we must create a whole new datasets dict to update the binary object in db
+    analysis.datasets = copy.deepcopy(analysis.datasets)
+    analysis.datasets["imported"].append(dataset)
+    session.commit()
+
+
 print(f"{city} bounding box {bbox}")
 print(f"{city} country {country}")
 
@@ -102,9 +150,12 @@ if country in COUNTRIES:
 # OSM data needs to be imported first, will create the database
 if "osm" in datasets:
     print(f"--- Importing OSM data for {city} ---")
+    import_path = os.path.join(os.path.dirname(__loader__.path), "scripts", "import_osm.sh")
     for continent in CONTINENTS:
         # Nominatim does not provide us with the continent. Will have to do some guessing
-        if not os.system(f"./scripts/import_osm.sh {continent} {country} \"{city.lower()}\" {osm_extracts_api_key}"):
+        if not os.system(f"{import_path} {continent} {country} {slug} {osm_extracts_api_key}"):
+            # success!
+            mark_imported("osm")
             break
 
 if "flickr" in datasets:

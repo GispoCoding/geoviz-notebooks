@@ -1,3 +1,5 @@
 #!/bin/bash
 
-jupyter nbconvert --to=html --ExecutePreprocessor.timeout=1200 --execute notebooks/export.ipynb
+SCRIPT=`realpath $0`
+SCRIPTPATH=$(dirname "$SCRIPT")
+jupyter nbconvert --to=html --ExecutePreprocessor.timeout=1200 --execute $SCRIPTPATH/notebooks/export.ipynb
