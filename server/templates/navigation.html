@@ -2,12 +2,12 @@
     <div class="navbar-fixed">
         <nav class="nav-wrapper">
             <ul class="left">
-                <li class="active"><a href="/">{{title}}</a></li>
-                <li><a href="/map"><i class="material-icons left">map</i>Result map</a></li>
+                <li class="{{'active' if request.path == '/'}}"><a href="/">Gispo Spatial Analytics</a></li>
+                <li class="{{'active' if request.path == '/maps/'}}"><a href="/maps"><i class="material-icons left">map</i>Result maps</a></li>
             </ul>
             <ul class="right">
-                <li><a href="/instructions"><i class="material-icons left">info</i>Instructions</a></li>
-                <li><a href="/logout"><i class="material-icons left">logout</i>Log out</a></li>
+                <li class="{{'active' if request.path == '/instructions/'}}"><a href="/instructions"><i class="material-icons left">info</i>Instructions</a></li>
+                <li class="{{'active' if request.path == '/logout/'}}"><a href="/logout"><i class="material-icons left">logout</i>Log out</a></li>
             </ul>
         </nav>
     </div>

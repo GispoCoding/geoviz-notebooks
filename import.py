@@ -9,8 +9,6 @@ from dotenv import load_dotenv
 from datasets import DATASETS
 from geoalchemy2.shape import from_shape
 from ipygis import get_connection_url
-from inspect import getsourcefile
-#from os.path import abspath
 from scripts.import_flickr import FlickrImporter
 from scripts.import_gtfs import GTFSImporter
 from scripts.import_kontur import KonturImporter
@@ -19,7 +17,10 @@ from scripts.import_osm_accessibility import AccessibilityImporter
 from shapely.geometry import box
 from slugify import slugify
 from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError, ProgrammingError
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.schema import CreateSchema
+from sqlalchemy_utils.functions import database_exists, create_database
 
 from models import Analysis
 
@@ -42,6 +43,9 @@ COUNTRIES = {
 
 # save all analysis requests to the db
 sql_url = get_connection_url(dbname="geoviz")
+# create db if this is the first run
+if not database_exists(sql_url):
+    create_database(sql_url)
 engine = create_engine(sql_url)
 session = sessionmaker(bind=engine)()
 Analysis.__table__.create(engine, checkfirst=True)
@@ -54,7 +58,7 @@ parser = argparse.ArgumentParser(description="Import all datasets for a given ci
 parser.add_argument("city", default="Helsinki", help="City to import")
 parser.add_argument("--gtfs", help="Optional GTFS feed URL")
 parser.add_argument("--datasets",
-                    default=" ".join([dataset[0] for dataset in DATASETS]),
+                    default=" ".join([dataset for dataset in DATASETS]),
                     help="Datasets to import. Default is to import all. E.g. \"osm access kontur\""
                     )
 parser.add_argument("--bbox", help="Use different bbox for the city. Format \"minx miny maxx maxy\"")
@@ -117,13 +121,8 @@ else:
 # bbox must always be float
 bbox = [float(coord) for coord in bbox]
 
-# TODO: what to do if there is an analysis for the city already?
-# 1) use another slug or
-# 2) prevent run or
-# 3) overwrite analysis? maybe ask the user.
-
 # save all analysis requests to the db
-slug=slugify(city)
+slug = slugify(city)
 analysis = Analysis(
     slug=slug,
     name=city,
@@ -134,7 +133,27 @@ analysis = Analysis(
     parameters={'gtfs': {'url': gtfs_url}}
 )
 session.add(analysis)
-session.commit()
+try:
+    session.commit()
+except IntegrityError:
+    session.rollback()
+    # there is an analysis for the city already. merge the datasets
+    print(f"Analysis for {city} found already. Merging the analyses.")
+    analysis = session.query(Analysis).filter(Analysis.slug == slug).first()
+    analysis.bbox = from_shape(box(*[float(coord) for coord in bbox]))
+    analysis.viewed = False
+    analysis.finish_time = None
+    if gtfs_url:
+        analysis.parameters = {'gtfs': {'url': gtfs_url}}
+    analysis.datasets = copy.deepcopy(analysis.datasets)
+    analysis.datasets["selected"] = datasets
+    session.commit()
+# create schema for the analysis
+try:
+    engine.execute(CreateSchema(slug))
+except ProgrammingError:
+    # the schema may exist if some datasets have already been imported
+    pass
 
 
 # save analysis progress to the db as well
@@ -202,7 +221,7 @@ if "kontur" in datasets:
 print(f"--- Datasets {datasets} for {city} imported to PostGIS ---")
 if export:
     print(f"--- Creating result map for {city} ---")
-    export_path = os.path.join(os.path.dirname(__loader__.path), "export.sh")
+    export_path = os.path.join(os.path.dirname(__loader__.path), f"export.py {slug}")
     os.system(export_path)
 
 analysis.finish_time = datetime.datetime.now()

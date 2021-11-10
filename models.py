@@ -51,13 +51,6 @@ class OSMPoint(SchemaBase):
     geom = Column(Geometry(geometry_type='POINT', spatial_index=False))
 
 
-class OSMPolygon(SchemaBase):
-    __tablename__ = 'osmpolygons'
-    area_id = Column(BigInteger, primary_key=True)
-    tags = Column(JSONB)
-    geom = Column(Geometry(geometry_type='POLYGON', spatial_index=False))
-
-
 # Use JSONB field for all datasets so we won't need migrations in the future
 
 class FlickrPoint(SchemaBase):

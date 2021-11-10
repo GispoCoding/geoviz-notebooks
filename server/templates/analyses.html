@@ -1,0 +1,49 @@
+<div class="analysis-list">
+    {% for analysis in analyses %}
+        <div class="row analysis">
+            <hr>
+            <div class="col s9">
+                <div class="col s7">
+                    {{ analysis.name }}
+                </div>
+                <div class="col s2">
+                    {% if not analysis.finish_time %}
+                        <div class="progress right">
+                            <div class="indeterminate"></div>
+                        </div>
+                    {% else %}
+                        Finished
+                    {% endif %}
+                </div>
+                {% if analysis.finish_time %}
+                    <div class="col s5 left-align">
+                        Started at {{ analysis.start_time }}
+                    </div>
+                    <div class="col s4 right-align">
+                        Finished at {{ analysis.finish_time }}
+                    </div>
+                {% else %}
+                    <div class="col s7">
+                        Started at {{ analysis.start_time }}
+                    </div>
+                    <div class="col s2 right-align">
+                        Running...
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col s3">
+                {% if not analysis.finish_time %}
+                    <button class="waves-effect waves-light btn right">
+                        <i class="material-icons left">cancel</i>Cancel
+                    </button>
+                {% else %}
+                <a href="{{ url_for('map_for_city', slug=analysis.slug) }}">
+                    <button class="waves-effect waves-light btn right">
+                            <i class="material-icons left">map</i>View results   
+                    </button>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>

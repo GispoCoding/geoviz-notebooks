@@ -36,9 +36,6 @@ else
     INPUT_FILE=$2.osm.pbf
 fi
 
-createdb geoviz
-# use separate schema for each city
-psql -d geoviz -c "create schema $3;"
 # now injecting the variable schema name to osm2pgsql config is ugly
 sed "s/city_specific_schema/$3/" $SCRIPTPATH/flex-config/generic.lua > config.lua.tmp
 osm2pgsql -d geoviz -O flex $INPUT_FILE -S config.lua.tmp --slim

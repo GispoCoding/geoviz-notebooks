@@ -16,6 +16,7 @@ python-dotenv
 python-slugify
 requests
 sqlalchemy>1.4
+sqlalchemy-utils
 
 # Our GIS tools
 git+https://github.com/GispoCoding/ipygis.git

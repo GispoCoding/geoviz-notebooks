@@ -79,7 +79,10 @@ class AnalysisForm(FlaskForm):
     dataset_selection = MultiCheckboxField(
         'Select data to include in the analysis',
         [DataRequired(message='Please select at least one dataset to use.')],
-        choices=DATASETS
+        choices=[
+            # choices must be a list of (key, name) pairs
+            (key, value['label']) for key, value in DATASETS.items()
+        ]
     )
     gtfs_url = StringField(
         'GTFS feed location for the city',

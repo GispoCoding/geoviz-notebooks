@@ -3,5 +3,6 @@ __pycache__
 .env
 cache
 data
+maps
 osm2pgsql
 pgdata

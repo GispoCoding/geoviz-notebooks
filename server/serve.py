@@ -40,12 +40,35 @@ def verify_password(username, password):
         return username
 
 
+# retain this for now to allow access to old public schema map
 @app.route('/map')
 @auth.login_required
 def map():
     return send_from_directory('notebooks', 'keplergl_map.html')
 
 
+@app.route('/maps/')
+@auth.login_required
+def maps():
+    analyses = session.query(Analysis).all()
+    return render_template(
+        'maps.html',
+        title="Result maps",
+        analyses=analyses
+    )
+
+
+@app.route('/maps/<string:slug>')
+@auth.login_required
+def map_for_city(slug):
+    # mark map viewed to remove it from front page
+    analysis = session.query(Analysis).filter(Analysis.slug == slug).first()
+    analysis.viewed = True
+    session.commit()
+    return send_from_directory('maps', f'{slug}.html')
+
+
+# no login needed, this is open source code
 @app.route('/static/<string:file>')
 def send_static_file(file):
     return send_from_directory('static', file)

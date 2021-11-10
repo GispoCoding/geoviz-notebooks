@@ -142,5 +142,6 @@ server/swag/
 .vscode/
 cache/
 data/
+maps/
 pgdata/
 osm2pgsql/
