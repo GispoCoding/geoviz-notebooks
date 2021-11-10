@@ -15,6 +15,7 @@ from forms import AnalysisForm
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
 from models import Analysis
+from scripts.import_gtfs import GTFS_DATASETS
 
 app = Flask(__name__, static_url_path='')
 auth = HTTPBasicAuth()
@@ -72,6 +73,16 @@ def map_for_city(slug):
 @app.route('/static/<string:file>')
 def send_static_file(file):
     return send_from_directory('static', file)
+
+
+# no login needed as long as we don't serve data from db
+@app.route('/gtfs_url/<string:city>')
+def send_gtfs_url(city):
+    url = GTFS_DATASETS.get(city, None)
+    # use offical GTFS url if known
+    if url:
+        return {'url': url}
+    return ('', 204)
 
 
 @app.route('/', methods=["GET", "POST"])

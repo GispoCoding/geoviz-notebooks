@@ -3,4 +3,5 @@ var autocomplete = new kt.OsmNamesAutocomplete(
 
 autocomplete.registerCallback(function (item) {
     setBbox(item.boundingbox);
+    setGtfsUrl(item.name);
 }, true);

@@ -41,15 +41,6 @@
                             {{ form.mapbox_apikey.label }}
                             {{ form.mapbox_apikey }}
                         </fieldset>
-                        <fieldset class="form-field">
-                            {{ form.gtfs_url.label }}
-                            {{ form.gtfs_url }}
-                            {% for error in form.gtfs_url.errors %}
-                                <div class="card-panel red lighten-2">
-                                    <span class="white-text">{{ error }}</span>
-                                </div>
-                            {% endfor %}
-                        </fieldset>
                     </div>
                     <div class="col m12 l7">
                         <fieldset class="form-field">
@@ -65,11 +56,20 @@
                             {{ form.bbox.bbox.label }}
                             {{ form.bbox.bbox(readonly=true) }}
                         </fieldset>
+                        <fieldset class="form-field">
+                            {{ form.gtfs_url.label }}
+                            {{ form.gtfs_url }}
+                            {% for error in form.gtfs_url.errors %}
+                                <div class="card-panel red lighten-2">
+                                    <span class="white-text">{{ error }}</span>
+                                </div>
+                            {% endfor %}
+                        </fieldset>
                     </div>
+
+                    {{ form.import_button(class="waves-effect waves-light btn right")}}
+
                 </div>
-      
-                {{ form.import_button(class="waves-effect waves-light btn")}}
-      
             </form>
           </div>
     </div>
