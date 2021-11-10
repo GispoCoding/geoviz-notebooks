@@ -1,5 +1,19 @@
 from models import OSMPoint, FlickrPoint, GTFSStop, OSMAccessNode, OoklaPoint, KonturPoint
 
+# Dataset definition schema:
+# 'dataset_id': {
+#   'label': Text to display in analysis UI
+#   'model': SQLAlchemy base to use
+#   'name': Name to display in Kepler map
+#   'weight': Weight in the sum (index) layer. Positive weight means layer minimum will get value zero
+#        in the index and layer maximum will get value weight. Negative weight means layer maximum
+#        will get value zero and layer minimum will get value abs(weight).
+#   'group_by': (optional) Field to group points by before plotting. Default None.
+#   'plot': (optional) Function to use when combining values within one H3 hex. Default 'size'.
+#        Possible functions are https://pandas.pydata.org/docs/reference/groupby.html#computations-descriptive-stats
+#   'column': (optional) Field whose value to plot. Default None will just count point numbers.
+# }
+
 DATASETS = {
     'osm': {
         'label': 'OpenStreetMap amenities',
