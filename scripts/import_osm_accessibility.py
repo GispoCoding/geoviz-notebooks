@@ -28,7 +28,7 @@ class AccessibilityImporter(object):
             schema_translate_map={'schema': slug}
         )
         self.session = sessionmaker(bind=schema_engine)()
-        OSMAccessNode.__table__.create(schema_engine)
+        OSMAccessNode.__table__.create(schema_engine, checkfirst=True)
 
     def run(self):
         print("Fetching graph from overpass API...")
