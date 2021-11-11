@@ -110,15 +110,11 @@ class GTFSImporter(object):
             # use dict, since the json may contain the same stop twice!
             if stop_id in stops_to_save:
                 self.logger.info(f"Stop {stop_id} found twice, overwriting")
-            # multiple cities may contain departures from the same stop. such
-            # a stop is usually outside both cities (unless cities overlap).
-            # overwrite existing data for the stop.
             stops_to_save[stop_id] = self.session.merge(
                 GTFSStop(stop_id=stop_id, properties=stop, geom=geom)
             )
         self.logger.info(f"Saving {len(stops_to_save)} GTFS stops...")
-        # we cannot use bulk save, as we have to check for existing ids.
-        # self.session.bulk_save_objects(stops_to_save.values())
+        self.session.bulk_save_objects(stops_to_save.values())
         self.session.commit()
 
 
