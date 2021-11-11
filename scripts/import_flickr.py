@@ -6,6 +6,7 @@ import time
 from flickrapi import FlickrAPI, FlickrError
 from dotenv import load_dotenv
 from ipygis import get_connection_url
+from logging import Logger
 from shapely.geometry import Point
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -18,7 +19,8 @@ from models import FlickrPoint
 
 class FlickrImporter(object):
 
-    def __init__(self, slug: str, bbox: Tuple):
+    def __init__(self, slug: str, bbox: Tuple, logger: Logger):
+        self.logger = logger
         if not slug:
             raise AssertionError("You must specify the city name.")
         # BBOX (minx, miny, maxx, maxy)
@@ -37,7 +39,7 @@ class FlickrImporter(object):
         FlickrPoint.__table__.create(schema_engine, checkfirst=True)
 
     def run(self):
-        print(f'Running flick import with bbox {self.bbox_string}...')
+        self.logger.info(f'Running flick import with bbox {self.bbox_string}...')
         # List for photos
         photos = []
 
@@ -50,7 +52,7 @@ class FlickrImporter(object):
         # Loop years
         for year in years_list:
 
-            print('\nyear: '+str(year))
+            self.logger.info('\nyear: '+str(year))
 
             # Whole years
             if year < 2021:
@@ -63,7 +65,7 @@ class FlickrImporter(object):
             # Loop months
             for month in months_list:
                 
-                print('  month: '+str(month))
+                self.logger.info(f'  month: {month}')
                 
                 # Number of days in month being looped
                 n_days = calendar.monthrange(year, month)[1]
@@ -74,7 +76,7 @@ class FlickrImporter(object):
                 # Loop days
                 for day in days_list:
                     
-                    print('    day: '+str(day))
+                    self.logger.info(f'    day: {day}')
                     
                     # Get min and max timestamps (mysql format)
                     min_taken_date = str(year) + '-' + str(month) + '-' + str(day) + ' 00:00:00'
@@ -89,7 +91,7 @@ class FlickrImporter(object):
                         # Protect api key (limit amount of queries)
                         if q_count > 3500:
                             raise AssertionError("Over 3500 queries done! Stopping to protect API key.")
-                        print('      query: '+str(q_count))
+                        self.logger.info(f'      query: {q_count}')
 
                         # Wait time to avoid errors
                         time.sleep(0.1)
@@ -109,7 +111,7 @@ class FlickrImporter(object):
                                 page = page
                             )
                         except FlickrError as e:
-                            print(f"      Flickr API returned an error: {e}. Trying next request.")
+                            self.logger.warn(f"      Flickr API returned an error: {e}. Trying next request.")
                             q_count += 1
                             break
 
@@ -117,13 +119,13 @@ class FlickrImporter(object):
 
                         # Add result
                         photos_to_add = result['photos']
-                        print('        total_photos:', photos_to_add['total'])
-                        print('        current_pages:', page)
+                        self.logger.info(f"        total_photos: {photos_to_add['total']}")
+                        self.logger.info(f'        current_pages: {page}')
                         photos += photos_to_add['photo']
 
                         # Check for query size limit (10 x 400 = 4000)
                         if page > 10 :
-                            print("      Query has exceeded the limit of 4000 photos")
+                            self.logger.error("      Query has exceeded the limit of 4000 photos")
                             break
                         # Break when done
                         elif page >= photos_to_add['pages']:
@@ -131,19 +133,19 @@ class FlickrImporter(object):
                         page += 1
 
         flickr_points = {}
-        print(f"Found {len(photos)} flickr photos, importing...")
+        self.logger.info(f"Found {len(photos)} flickr photos, importing...")
         for point in photos:
             pid = point.pop("id")
             geom = from_shape(Point(float(point.pop("longitude")), float(point.pop("latitude"))), srid=4326)
             # use dict, since the json may contain the same image twice!
             if pid in flickr_points:
-                print(f"Image {pid} found twice, overwriting")
+                self.logger.info(f"Image {pid} found twice, overwriting")
             # multiple cities may contain the same photos, if the bboxes overlap.
             # overwrite existing photos.
             flickr_points[pid] = self.session.merge(
                 FlickrPoint(point_id=pid, properties=point, geom=geom)
             )
-        print(f"Saving {len(flickr_points)} flickr points...")
+        self.logger.info(f"Saving {len(flickr_points)} flickr points...")
         # we cannot use bulk save, as we have to check for existing ids.
         # self.session.bulk_save_objects(flickr_points.values())
         self.session.commit()

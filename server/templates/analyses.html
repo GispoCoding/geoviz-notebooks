@@ -32,6 +32,11 @@
                 {% endif %}
             </div>
             <div class="col s3">
+                <a href="{{ url_for('log_for_city', slug=analysis.slug) }}">
+                    <button class="waves-effect waves-light btn left">
+                        View log
+                    </button>
+                </a>
                 {% if not analysis.finish_time %}
                     <button class="waves-effect waves-light btn right">
                         <i class="material-icons left">cancel</i>Cancel

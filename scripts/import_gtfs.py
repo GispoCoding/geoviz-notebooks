@@ -5,6 +5,7 @@ import re
 import requests
 from gtfs_functions import import_gtfs, stops_freq
 from ipygis import get_connection_url
+from logging import Logger
 from shapely.geometry import Point
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -38,7 +39,8 @@ DATA_PATH = "data"
 
 
 class GTFSImporter(object):
-    def __init__(self, slug: str, city: str, url: str = "", bbox: List[float] = None):
+    def __init__(self, slug: str, city: str, logger: Logger, url: str = "", bbox: List[float] = None):
+        self.logger = logger
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         self.city = city
@@ -59,7 +61,7 @@ class GTFSImporter(object):
 
     def run(self):
         if not self.url:
-            print(f"GTFS data not found for {self.city}, skipping.")
+            self.logger.error(f"GTFS data not found for {self.city}, skipping.")
             return
         # data should be stored one directory level above importers
         filename = os.path.join(
@@ -68,27 +70,29 @@ class GTFSImporter(object):
             f"{self.city}.gtfs.zip"
         )
         if os.path.isfile(filename):
-            print("Found saved gtfs zip...")
+            self.logger.info("Found saved gtfs zip...")
         else:
-            print("Downloading gtfs zip...")
+            self.logger.info("Downloading gtfs zip...")
             response = requests.get(self.url, allow_redirects=True)
             open(filename, 'wb').write(response.content)
 
-        print("Loading gtfs zip...")
+        self.logger.info("Loading gtfs zip...")
         routes, stops, stop_times, trips, shapes = import_gtfs(filename)
+        # TODO: delete file after reading, we don't want to keep caching them all?
+        # This is the only large dataset we download separately. or is gtfs data valuable?
 
         # only analyze stops within bbox, to cut down processing time
         # luckily, we have nifty bbox filtering available for geodataframes
         # https://geopandas.org/docs/user_guide/indexing.html
         if self.bbox:
-            print("Filtering gtfs data with bbox...")
-            print(self.bbox)
+            self.logger.info("Filtering gtfs data with bbox...")
+            self.logger.info(self.bbox)
             stops = stops.cx[self.bbox[0]:self.bbox[2], self.bbox[1]:self.bbox[3]]
             stop_times = stop_times.cx[self.bbox[0]:self.bbox[2], self.bbox[1]:self.bbox[3]]
 
         # only calculate average daily frequency for all stops for now
         cutoffs = [0, 24]
-        print("Calculating stop frequencies...")
+        self.logger.info("Calculating stop frequencies...")
         stop_frequencies = stops_freq(stop_times, stops, cutoffs)
         # only consider outbound departures for now
         outbound_frequencies = stop_frequencies.loc[
@@ -99,20 +103,20 @@ class GTFSImporter(object):
         if not outbound_frequencies:
             outbound_frequencies = stop_frequencies.to_dict(orient="records")
         stops_to_save = {}
-        print(f"Found {len(outbound_frequencies)} GTFS stops, importing...")
+        self.logger.info(f"Found {len(outbound_frequencies)} GTFS stops, importing...")
         for stop in outbound_frequencies:
             stop_id = stop.pop("stop_id")
             geom = from_shape(stop.pop("geometry"), srid=4326)
             # use dict, since the json may contain the same stop twice!
             if stop_id in stops_to_save:
-                print(f"Stop {stop_id} found twice, overwriting")
+                self.logger.info(f"Stop {stop_id} found twice, overwriting")
             # multiple cities may contain departures from the same stop. such
             # a stop is usually outside both cities (unless cities overlap).
             # overwrite existing data for the stop.
             stops_to_save[stop_id] = self.session.merge(
                 GTFSStop(stop_id=stop_id, properties=stop, geom=geom)
             )
-        print(f"Saving {len(stops_to_save)} GTFS stops...")
+        self.logger.info(f"Saving {len(stops_to_save)} GTFS stops...")
         # we cannot use bulk save, as we have to check for existing ids.
         # self.session.bulk_save_objects(stops_to_save.values())
         self.session.commit()

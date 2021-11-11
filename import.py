@@ -3,8 +3,10 @@
 import argparse
 import copy
 import datetime
+import logging
 import os
 import requests
+import sys
 from dotenv import load_dotenv
 from datasets import DATASETS
 from geoalchemy2.shape import from_shape
@@ -24,6 +26,8 @@ from sqlalchemy_utils.functions import database_exists, create_database
 
 from models import Analysis
 
+IMPORT_LOG_PATH = 'logs'
+
 CONTINENTS = [
     "europe",
     "africa",
@@ -40,15 +44,6 @@ CONTINENTS = [
 COUNTRIES = {
     "czechia": "czech-republic"
 }
-
-# save all analysis requests to the db
-sql_url = get_connection_url(dbname="geoviz")
-# create db if this is the first run
-if not database_exists(sql_url):
-    create_database(sql_url)
-engine = create_engine(sql_url)
-session = sessionmaker(bind=engine)()
-Analysis.__table__.create(engine, checkfirst=True)
 
 load_dotenv()
 osm_extracts_api_key = os.getenv("OSM_EXTRACTS_API_KEY")
@@ -70,17 +65,29 @@ parser.add_argument("--export",
 
 args = vars(parser.parse_args())
 city = args["city"]
-datasets = args["datasets"].split()
+slug = slugify(city)
+dataset_string = args["datasets"]
+datasets = dataset_string.split()
 gtfs_url = args.get("gtfs", None)
 bbox = args.get("bbox", None)
 export = args.get("export", False)
-print(f"--- Importing datasets {datasets} for {city} ---")
+
+# log each city separately
+log_file = os.path.join(os.path.dirname(__loader__.path), IMPORT_LOG_PATH, f"{slug}.log")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+stdout_handler = logging.StreamHandler(sys.stdout)
+file_handler = logging.FileHandler(log_file)
+logger.addHandler(stdout_handler)
+logger.addHandler(file_handler)
+
+logger.info(f"--- Importing datasets {datasets} for {city} ---")
 
 if osmnames_url:
-    print("Geocode using OSMNames...")
+    logger.info("Geocode using OSMNames...")
     # Use our own geocoding service. It provides bbox and country for city.
-    print(osmnames_url)
-    print(city)
+    logger.info(osmnames_url)
+    logger.info(city)
     city_data = requests.get(
         f"{osmnames_url}/q/{city}.js"
     ).json()["results"][0]
@@ -90,7 +97,7 @@ if osmnames_url:
         bbox = city_data["boundingbox"]
     country = city_data["country"]
 else:
-    print("Geocode using Nominatim...")
+    logger.info("Geocode using Nominatim...")
     # Fall back to Nominatim. Their API doesn't always respond tho.
     # Get bbox, centroid and country for the city
     city_params = {"q": args["city"], "limit": 1, "format": "json"}
@@ -104,7 +111,7 @@ else:
         # we want minx, miny, maxx, maxy
         bbox = [city_data["boundingbox"][i] for i in [2, 0, 3, 1]]
     centroid = [city_data["lon"], city_data["lat"]]
-    print(f"{city} centroid {centroid}")
+    logger.info(f"{city} centroid {centroid}")
 
     country_params = {
         "lat": centroid[1],
@@ -122,7 +129,13 @@ else:
 bbox = [float(coord) for coord in bbox]
 
 # save all analysis requests to the db
-slug = slugify(city)
+sql_url = get_connection_url(dbname="geoviz")
+# create db if this is the first run
+if not database_exists(sql_url):
+    create_database(sql_url)
+engine = create_engine(sql_url)
+session = sessionmaker(bind=engine)()
+Analysis.__table__.create(engine, checkfirst=True)
 analysis = Analysis(
     slug=slug,
     name=city,
@@ -138,7 +151,7 @@ try:
 except IntegrityError:
     session.rollback()
     # there is an analysis for the city already. merge the datasets
-    print(f"Analysis for {city} found already. Merging the analyses.")
+    logger.info(f"Analysis for {city} found already. Merging the analyses.")
     analysis = session.query(Analysis).filter(Analysis.slug == slug).first()
     analysis.bbox = from_shape(box(*[float(coord) for coord in bbox]))
     analysis.viewed = False
@@ -164,8 +177,8 @@ def mark_imported(dataset: str):
     session.commit()
 
 
-print(f"{city} bounding box {bbox}")
-print(f"{city} country {country}")
+logger.info(f"{city} bounding box {bbox}")
+logger.info(f"{city} country {country}")
 
 country = country.lower()
 # some countries are known in nominatim, osmextracts and geofabrik by different names
@@ -174,7 +187,7 @@ if country in COUNTRIES:
 
 # OSM data needs to be imported first, will create the database
 if "osm" in datasets:
-    print(f"--- Importing OSM data for {city} ---")
+    logger.info(f"--- Importing OSM data for {city} ---")
     import_path = os.path.join(os.path.dirname(__loader__.path), "scripts", "import_osm.sh")
     for continent in CONTINENTS:
         # Nominatim does not provide us with the continent. Will have to do some guessing
@@ -184,44 +197,44 @@ if "osm" in datasets:
             break
 
 if "flickr" in datasets:
-    print(f"--- Importing Flickr data for {city} ---")
-    flick_importer = FlickrImporter(slug=slug, bbox=bbox)
+    logger.info(f"--- Importing Flickr data for {city} ---")
+    flick_importer = FlickrImporter(slug=slug, bbox=bbox, logger=logger)
     flick_importer.run()
     mark_imported("flickr")
 
 if "gtfs" in datasets:
     # GTFS importer uses the provided URL or, failing that, default values for some cities
     if gtfs_url:
-        print(f"--- Importing GTFS data from {gtfs_url} ---")
-        gtfs_importer = GTFSImporter(slug=slug, url=gtfs_url, city=city, bbox=bbox)
+        logger.info(f"--- Importing GTFS data from {gtfs_url} ---")
+        gtfs_importer = GTFSImporter(slug=slug, url=gtfs_url, city=city, bbox=bbox, logger=logger)
     else:
-        print(f"--- Importing GTFS data for {city} ---")
-        gtfs_importer = GTFSImporter(slug=slug, city=city, bbox=bbox)
+        logger.info(f"--- Importing GTFS data for {city} ---")
+        gtfs_importer = GTFSImporter(slug=slug, city=city, bbox=bbox, logger=logger)
     gtfs_importer.run()
     mark_imported("gtfs")
 
 if "access" in datasets:
-    print(f"--- Importing OSM walkability & accessibility data for {city} ---")
-    accessibility_importer = AccessibilityImporter(slug=slug, bbox=bbox)
+    logger.info(f"--- Importing OSM walkability & accessibility data for {city} ---")
+    accessibility_importer = AccessibilityImporter(slug=slug, bbox=bbox, logger=logger)
     accessibility_importer.run()
     mark_imported("access")
 
 if "ookla" in datasets:
-    print(f"--- Importing Ookla speedtest data for {city} ---")
-    ookla_importer = OoklaImporter(slug=slug, city=city, bbox=bbox)
+    logger.info(f"--- Importing Ookla speedtest data for {city} ---")
+    ookla_importer = OoklaImporter(slug=slug, city=city, bbox=bbox, logger=logger)
     ookla_importer.run()
     mark_imported("ookla")
 
 if "kontur" in datasets:
-    print(f"--- Importing Kontur population data for {city} ---")
-    kontur_importer = KonturImporter(slug=slug, city=city, bbox=bbox)
+    logger.info(f"--- Importing Kontur population data for {city} ---")
+    kontur_importer = KonturImporter(slug=slug, city=city, bbox=bbox, logger=logger)
     kontur_importer.run()
     mark_imported("kontur")
 
-print(f"--- Datasets {datasets} for {city} imported to PostGIS ---")
+logger.info(f"--- Datasets {datasets} for {city} imported to PostGIS ---")
 if export:
-    print(f"--- Creating result map for {city} ---")
-    export_path = os.path.join(os.path.dirname(__loader__.path), f"export.py {slug}")
+    logger.info(f"--- Creating result map for {city} ---")
+    export_path = os.path.join(os.path.dirname(__loader__.path), f"export.py {slug} --datasets \'{dataset_string}\'")
     os.system(export_path)
 
 analysis.finish_time = datetime.datetime.now()

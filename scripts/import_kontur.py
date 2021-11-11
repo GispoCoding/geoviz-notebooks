@@ -6,6 +6,7 @@ import sys
 import requests
 import shutil
 from ipygis import get_connection_url
+from logging import Logger
 from osgeo import gdal
 from shapely.geometry import Point, Polygon
 from sqlalchemy import create_engine
@@ -22,7 +23,8 @@ DATA_PATH = "data"
 
 class KonturImporter(object):
 
-    def __init__(self, slug: str, city: str, bbox: Tuple):
+    def __init__(self, slug: str, city: str, bbox: Tuple, logger: Logger):
+        self.logger = logger
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         # BBOX (minx, miny, maxx, maxy)
@@ -52,15 +54,15 @@ class KonturImporter(object):
 
     def run(self):
         if os.path.isfile(self.download_file):
-            print("Found saved Kontur data...")
+            self.logger.info("Found saved Kontur data...")
         else:
-            print("Downloading Kontur data...")
-            print(f"{self.download_url}{self.download_name}.gz")
+            self.logger.info("Downloading Kontur data...")
+            self.logger.info(f"{self.download_url}{self.download_name}.gz")
             with requests.get(f"{self.download_url}{self.download_name}.gz", stream=True) as request:
                 with open(self.download_file, 'wb') as file:
                     shutil.copyfileobj(request.raw, file)
         if not os.path.isfile(self.unzipped_file):
-            print("Extracting gz...")
+            self.logger.info("Extracting gz...")
             with gzip.open(self.download_file, 'rb') as gzip_file:
                 with open(self.unzipped_file, 'wb') as out_file:
                     shutil.copyfileobj(gzip_file, out_file)
@@ -68,7 +70,7 @@ class KonturImporter(object):
         if not os.path.isfile(self.city_file):
             if not os.path.isdir(f"{self.unzipped_file}_extracts"):
                 os.mkdir(f"{self.unzipped_file}_extracts")
-            print(f"Extracting {self.city} from Kontur data...")
+            self.logger.info(f"Extracting {self.city} from Kontur data...")
             gdal.UseExceptions()
             # this does the same as ogr2ogr
             # https://gdal.org/python/osgeo.gdal-module.html#VectorTranslateOptions
@@ -83,8 +85,8 @@ class KonturImporter(object):
             # https://gdal.org/api/python_gotchas.html#saving-and-closing-datasets-datasources
             del city_data
         else:
-            print(f"Found geopackage for {self.city}...")
-        print(f"Reading Kontur data for {self.city}...")
+            self.logger.info(f"Found geopackage for {self.city}...")
+        self.logger.info(f"Reading Kontur data for {self.city}...")
         points_to_save = {}
         for layer_name in fiona.listlayers(self.city_file):
             with fiona.open(self.city_file, layer=layer_name) as source:
@@ -103,7 +105,7 @@ class KonturImporter(object):
                     points_to_save[hex_id] = self.session.merge(
                         KonturPoint(hex_id=hex_id, properties=properties, geom=geom)
                     )
-        print(f"Saving {len(points_to_save)} Kontur points...")
+        self.logger.info(f"Saving {len(points_to_save)} Kontur points...")
         # we cannot use bulk save, as we have to check for existing ids.
         # self.session.bulk_save_objects(points_to_save.values())
         self.session.commit()

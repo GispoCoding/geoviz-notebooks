@@ -3,6 +3,7 @@ import sys
 import osmnx as ox
 import pandana
 from ipygis import get_connection_url
+from logging import Logger
 from shapely.geometry import Point
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -16,7 +17,8 @@ from osm_tags import tags_to_filter
 
 
 class AccessibilityImporter(object):
-    def __init__(self, slug: str, bbox: Tuple, city: Optional[str] = None):
+    def __init__(self, slug: str, bbox: Tuple, logger: Logger, city: Optional[str] = None):
+        self.logger = logger
         if not slug:
             raise AssertionError("You must specify the city name.")
         (self.minx, self.miny, self.maxx, self.maxy) = bbox
@@ -31,7 +33,7 @@ class AccessibilityImporter(object):
         OSMAccessNode.__table__.create(schema_engine, checkfirst=True)
 
     def run(self):
-        print("Fetching graph from overpass API...")
+        self.logger.info("Fetching graph from overpass API...")
         # Get graph by geocoding
         try:
             graph = ox.graph_from_place(self.city, network_type="walk")
@@ -43,7 +45,7 @@ class AccessibilityImporter(object):
             )
             ignore_geocoding = True
 
-        print("Projecting graph...")
+        self.logger.info("Projecting graph...")
         # Project graph for accurate simplification (and more accurate poi centroids later on)
         graph = ox.projection.project_graph(graph, to_crs=3035)
 
@@ -72,7 +74,7 @@ class AccessibilityImporter(object):
 
         graph = ox.add_edge_travel_times(graph)
 
-        print("Extracting geodataframes...")
+        self.logger.info("Extracting geodataframes...")
         # Extract node/edge GeoDataFrames, retaining only necessary columns (for pandana)
         nodes = ox.graph_to_gdfs(graph, edges=False)[["x", "y"]]
         edges = ox.graph_to_gdfs(graph, nodes=False).reset_index()[
@@ -80,7 +82,7 @@ class AccessibilityImporter(object):
         ]
 
         # Select pois based on osm tags
-        print("Constructing amenities POIs...")
+        self.logger.info("Constructing amenities POIs...")
         # Get amentities from place/bbox
         if ignore_geocoding is True:
             amenities = ox.geometries.geometries_from_bbox(
@@ -116,7 +118,7 @@ class AccessibilityImporter(object):
             y_col=centroids.y,
         )
 
-        print("Calculating distances to amenities...")
+        self.logger.info("Calculating distances to amenities...")
         # calculate travel time to 10 nearest amenities from each node in network
         distances = network.nearest_pois(distance=maxdist, category="pois", num_pois=10)
 
@@ -129,7 +131,7 @@ class AccessibilityImporter(object):
         walk_access_wgs = nodes_wgs.join(distances, on="osmid", how="left")
         walk_access_dict = walk_access_wgs.to_dict(orient="index")
         nodes_to_save = {}
-        print(f"Found {len(walk_access_dict)} accessibility nodes, importing...")
+        self.logger.info(f"Found {len(walk_access_dict)} accessibility nodes, importing...")
         for key, value in walk_access_dict.items():
             node_id = key
             geom = from_shape(
@@ -137,13 +139,13 @@ class AccessibilityImporter(object):
             )
             # use dict, since the json may contain the same stop twice!
             if node_id in nodes_to_save:
-                print(f"Node {node_id} found twice, overwriting")
+                self.logger.info(f"Node {node_id} found twice, overwriting")
             # multiple cities may contain the same points, if the bboxes overlap.
             # overwrite existing data for the points.
             nodes_to_save[node_id] = self.session.merge(
                 OSMAccessNode(node_id=node_id, accessibilities=value, geom=geom)
             )
-        print(f"Saving {len(nodes_to_save)} accessibility nodes...")
+        self.logger.info(f"Saving {len(nodes_to_save)} accessibility nodes...")
         # we cannot use bulk save, as we have to check for existing ids.
         # self.session.bulk_save_objects(nodes_to_save.values())
         self.session.commit()

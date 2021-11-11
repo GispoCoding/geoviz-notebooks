@@ -9,6 +9,7 @@ services:
       - /tmp/flask:/tmp/flask
       - ./data:/app/data
       - ./maps:/app/server/maps
+      - ./logs:/app/logs
     depends_on:
       - osmnames
       - postgis

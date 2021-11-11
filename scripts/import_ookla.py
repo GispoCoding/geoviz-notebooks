@@ -7,6 +7,7 @@ import shapefile
 import shutil
 import zipfile
 from ipygis import get_connection_url
+from logging import Logger
 from osgeo import gdal
 from shapely.geometry import Point, Polygon
 from sqlalchemy import create_engine
@@ -23,7 +24,8 @@ DATA_PATH = "data"
 
 class OoklaImporter(object):
 
-    def __init__(self, slug: str, city: str, bbox: Tuple):
+    def __init__(self, slug: str, city: str, bbox: Tuple, logger: Logger):
+        self.logger = logger
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         # BBOX (minx, miny, maxx, maxy)
@@ -51,20 +53,20 @@ class OoklaImporter(object):
 
     def run(self):
         if os.path.isfile(self.download_file):
-            print("Found saved Ookla data...")
+            self.logger.info("Found saved Ookla data...")
         else:
-            print("Downloading Ookla data...")
-            print(f"{self.download_url}{self.download_name}.zip")
+            self.logger.info("Downloading Ookla data...")
+            self.logger.info(f"{self.download_url}{self.download_name}.zip")
             with requests.get(f"{self.download_url}{self.download_name}.zip", stream=True) as request:
                 with open(self.download_file, 'wb') as file:
                     shutil.copyfileobj(request.raw, file)
         if not os.path.isdir(self.unzipped_path):
-            print("Extracting zip...")
+            self.logger.info("Extracting zip...")
             with zipfile.ZipFile(self.download_file, 'r') as zip_ref:
                 zip_ref.extractall(self.unzipped_path)
 
         if not os.path.isfile(self.city_file):
-            print(f"Extracting {self.city} from Ookla data...")
+            self.logger.info(f"Extracting {self.city} from Ookla data...")
             gdal.UseExceptions()
             # this does the same as ogr2ogr
             # https://gdal.org/python/osgeo.gdal-module.html#VectorTranslateOptions
@@ -73,13 +75,13 @@ class OoklaImporter(object):
                 f"{self.unzipped_path}/gps_fixed_tiles.shp",
                 spatFilter=self.bbox
             )
-            print(city_data)
+            self.logger.info(city_data)
             # we must dereference the data for the file actually to be written
             # https://gdal.org/api/python_gotchas.html#saving-and-closing-datasets-datasources
             del city_data
         else:
-            print(f"Found shapefile for {self.city}...")
-        print(f"Reading Ookla data for {self.city}...")
+            self.logger.info(f"Found shapefile for {self.city}...")
+        self.logger.info(f"Reading Ookla data for {self.city}...")
         with shapefile.Reader(self.city_file) as shapes:
             points_to_save = {}
             for shaperecord in shapes.shapeRecords():
@@ -102,9 +104,9 @@ class OoklaImporter(object):
                 points_to_save[quadkey_id] = self.session.merge(
                     OoklaPoint(quadkey_id=quadkey_id, properties=properties, geom=geom)
                 )
-                print(geom)
-                print(properties)
-        print(f"Saving {len(points_to_save)} Ookla points...")
+                self.logger.info(geom)
+                self.logger.info(properties)
+        self.logger.info(f"Saving {len(points_to_save)} Ookla points...")
         # we cannot use bulk save, as we have to check for existing ids.
         # self.session.bulk_save_objects(points_to_save.values())
         self.session.commit()

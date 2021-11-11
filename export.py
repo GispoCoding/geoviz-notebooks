@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import argparse
+import logging
 import os
+import sys
 from datasets import DATASETS
 from ipygis import get_connection_url, QueryResult, generate_map
 from slugify import slugify
@@ -10,6 +12,7 @@ from sqlalchemy.orm import sessionmaker
 from notebooks.kepler_h3_config import config  # we may use our own custom visualization config
 from osm_tags import tag_filter
 
+IMPORT_LOG_PATH = 'logs'
 MAPS_PATH = "server/maps"
 
 parser = argparse.ArgumentParser(description="Create result map for a given city")
@@ -22,6 +25,16 @@ args = vars(parser.parse_args())
 # slugify city name just in case export was called with non-slug
 city = slugify(args["city"])
 datasets_to_export = args["datasets"].split()
+delete = args["delete"]
+
+# log each city separately
+log_file = os.path.join(os.path.dirname(__loader__.path), IMPORT_LOG_PATH, f"{city}.log")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+stdout_handler = logging.StreamHandler(sys.stdout)
+file_handler = logging.FileHandler(log_file)
+logger.addFilter(stdout_handler)
+logger.addHandler(file_handler)
 
 sql_url = get_connection_url(dbname='geoviz')
 engine = create_engine(sql_url)
@@ -30,7 +43,7 @@ schema_engine = engine.execution_options(
 )
 session = sessionmaker(bind=schema_engine)()
 
-print(f"Collecting results for {city} with {datasets_to_export}...")
+logger.info(f"Collecting results for {city} with {datasets_to_export}...")
 
 queries = {
     dataset: session.query(DATASETS[dataset]['model'])
@@ -40,7 +53,7 @@ queries = {
 if 'osm' in queries:
     queries['osm'] = queries['osm'].filter(tag_filter)
 
-print(f"Running queries for {city} with {datasets_to_export}...")
+logger.info(f"Running queries for {city} with {datasets_to_export}...")
 results = [
     QueryResult.create(
         query,
@@ -53,7 +66,7 @@ results = [
     for dataset, query in queries.items()
 ]
 
-print(f"Creating map for {city} with {datasets_to_export}...")
+logger.info(f"Creating map for {city} with {datasets_to_export}...")
 weights = [
     DATASETS[dataset]['weight']
     for dataset in datasets_to_export

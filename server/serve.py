@@ -69,6 +69,12 @@ def map_for_city(slug):
     return send_from_directory('maps', f'{slug}.html')
 
 
+@app.route('/logs/<string:slug>')
+@auth.login_required
+def log_for_city(slug):
+    return send_from_directory('../logs', f'{slug}.log')
+
+
 # no login needed, this is open source code
 @app.route('/static/<string:file>')
 def send_static_file(file):
