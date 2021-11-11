@@ -110,9 +110,7 @@ class GTFSImporter(object):
             # use dict, since the json may contain the same stop twice!
             if stop_id in stops_to_save:
                 self.logger.info(f"Stop {stop_id} found twice, overwriting")
-            stops_to_save[stop_id] = self.session.merge(
-                GTFSStop(stop_id=stop_id, properties=stop, geom=geom)
-            )
+            stops_to_save[stop_id] = GTFSStop(stop_id=stop_id, properties=stop, geom=geom)
         self.logger.info(f"Saving {len(stops_to_save)} GTFS stops...")
         self.session.bulk_save_objects(stops_to_save.values())
         self.session.commit()
