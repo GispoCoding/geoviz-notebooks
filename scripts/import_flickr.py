@@ -140,14 +140,9 @@ class FlickrImporter(object):
             # use dict, since the json may contain the same image twice!
             if pid in flickr_points:
                 self.logger.info(f"Image {pid} found twice, overwriting")
-            # multiple cities may contain the same photos, if the bboxes overlap.
-            # overwrite existing photos.
-            flickr_points[pid] = self.session.merge(
-                FlickrPoint(point_id=pid, properties=point, geom=geom)
-            )
-        self.logger.info(f"Saving {len(flickr_points)} flickr points...")
-        # we cannot use bulk save, as we have to check for existing ids.
-        # self.session.bulk_save_objects(flickr_points.values())
+            flickr_points[pid] = FlickrPoint(point_id=pid, properties=point, geom=geom)
+        print(f"Saving {len(flickr_points)} flickr points...")
+        self.session.bulk_save_objects(flickr_points.values())
         self.session.commit()
 
 

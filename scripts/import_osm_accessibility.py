@@ -140,14 +140,11 @@ class AccessibilityImporter(object):
             # use dict, since the json may contain the same stop twice!
             if node_id in nodes_to_save:
                 self.logger.info(f"Node {node_id} found twice, overwriting")
-            # multiple cities may contain the same points, if the bboxes overlap.
-            # overwrite existing data for the points.
-            nodes_to_save[node_id] = self.session.merge(
-                OSMAccessNode(node_id=node_id, accessibilities=value, geom=geom)
+            nodes_to_save[node_id] = OSMAccessNode(
+                node_id=node_id, accessibilities=value, geom=geom
             )
         self.logger.info(f"Saving {len(nodes_to_save)} accessibility nodes...")
-        # we cannot use bulk save, as we have to check for existing ids.
-        # self.session.bulk_save_objects(nodes_to_save.values())
+        self.session.bulk_save_objects(nodes_to_save.values())
         self.session.commit()
 
 
