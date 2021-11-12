@@ -39,9 +39,27 @@
                     </button>
                 </a>
                 {% if not analysis.finish_time %}
-                    <button class="waves-effect waves-light btn right">
-                        <i class="material-icons left">cancel</i>Cancel
+                    <button id="delete_{{analysis.slug}}" class="cancel-button waves-effect waves-light btn right">
+                        <div id="delete_{{analysis.slug}}_text">
+                            <i class="material-icons left">cancel</i>Cancel
+                        </div>
+                        <div id="delete_{{analysis.slug}}_spinner" class="cancel-button-spinner preloader-wrapper small" style="top:-36px;">
+                            <div class="spinner-layer spinner-green-only">
+                            <div class="circle-clipper left">
+                                <div class="circle"></div>
+                            </div><div class="gap-patch">
+                                <div class="circle"></div>
+                            </div><div class="circle-clipper right">
+                                <div class="circle"></div>
+                            </div>
+                            </div>
+                        </div>
                     </button>
+                    {{ modal(
+                        ['cancel', analysis.slug]|join('_'),
+                        'Cancel analysis?',
+                        'Are you sure you want to cancel this analysis? All data and results will be deleted.'
+                    ) }}
                 {% else %}
                 <a href="{{ url_for('map_for_city', slug=analysis.slug) }}">
                     <button class="waves-effect waves-light btn right">
@@ -52,4 +70,5 @@
             </div>
         </div>
     {% endfor %}
+    {% from 'modal.html' import modal %}
 </div>
