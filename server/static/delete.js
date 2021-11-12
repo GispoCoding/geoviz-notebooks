@@ -5,8 +5,6 @@ const verifyDeletes = document.querySelectorAll("[id^='button_cancel'][id$='yes'
 const verifyDeleteSpinners = document.querySelectorAll("[id^='button_cancel'][id$='yes_spinner']");
 const cancelDeletes = document.querySelectorAll("[id^='button_cancel'][id$='no']");
 M.Modal.init(modalElements, {dismissible: false});
-console.log(verifyDeletes)
-console.log(verifyDeleteSpinners)
 
 if (deleteButtons) {
     deleteButtons.forEach((element, index) => {
