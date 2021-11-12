@@ -3,11 +3,13 @@ import secrets
 import subprocess
 import sys
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, send_from_directory
+from flask import Flask, redirect, render_template, request, send_from_directory
 from flask_httpauth import HTTPBasicAuth
-from geoalchemy2.shape import from_shape
+from slugify import slugify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.schema import DropSchema
+from time import sleep
 from werkzeug.security import check_password_hash
 
 from forms import AnalysisForm
@@ -32,6 +34,8 @@ sql_url = f"postgresql://{os.environ.get('PGUSER', 'postgres')}:{os.environ.get(
 engine = create_engine(sql_url)
 session = sessionmaker(bind=engine)()
 Analysis.__table__.create(engine, checkfirst=True)
+# store the running processes
+processes = {}
 
 
 @auth.verify_password
@@ -83,12 +87,34 @@ def send_static_file(file):
 
 # no login needed as long as we don't serve data from db
 @app.route('/gtfs_url/<string:city>')
-def send_gtfs_url(city):
+def gtfs_url_for_city(city):
     url = GTFS_DATASETS.get(city, None)
     # use offical GTFS url if known
     if url:
         return {'url': url}
-    return ('', 204)
+    return ('', 404)
+
+
+@app.route('/analyses/<string:city>', methods=["GET", "DELETE"])
+@auth.login_required
+def analysis_for_city(city):
+    slug = slugify(city)
+    analysis = session.query(Analysis).filter(Analysis.slug == slug).first()
+    # cancel an analysis
+    if request.method == 'DELETE':
+        # is SIGTERM enough?
+        if slug in processes:
+            print('process found, terminating')
+            processes[slug].terminate()
+            del processes[slug]
+        session.delete(analysis)
+        session.commit()
+        engine.execute(DropSchema(slug, cascade=True))
+        # TODO: delete also result file if present?
+        return ('', 200)
+    if analysis:
+        return analysis.serialize()
+    return('', 404)
 
 
 @app.route('/', methods=["GET", "POST"])
@@ -114,12 +140,11 @@ def home():
             gtfs_url,
             "--export"
         ])
-        # TODO: wait 0.1 before redirect to display analysis to the user?
+        processes[slugify(city_name)] = process
+        sleep(3.0)
         return redirect('/')
     unviewed_analyses = session.query(Analysis).filter(Analysis.viewed.is_(False)).all()
     running_analyses = session.query(Analysis).filter(Analysis.finish_time.is_(None)).all()
-
-    print(form.errors)
     return render_template(
         'home.html',
         title="Gispo Spatial Analytics",

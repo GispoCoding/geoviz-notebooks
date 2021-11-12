@@ -66,11 +66,29 @@
                             {% endfor %}
                         </fieldset>
                     </div>
-
-                    {{ form.import_button(class="waves-effect waves-light btn right")}}
-
                 </div>
+                <button id="import_button" type="submit" title="{{ form.import_button.label.text }}" class="waves-effect waves-light btn right">
+                    <div id="import_button_text">{{ form.import_button.label.text }}</div>
+                    <div id="import_button_spinner" class="preloader-wrapper small" style="top:-36px;">
+                        <div class="spinner-layer spinner-green-only">
+                        <div class="circle-clipper left">
+                            <div class="circle"></div>
+                        </div><div class="gap-patch">
+                            <div class="circle"></div>
+                        </div><div class="circle-clipper right">
+                            <div class="circle"></div>
+                        </div>
+                        </div>
+                    </div>
+                </button>
+                    <!-- {{ form.import_button(class="waves-effect waves-light btn right")}} -->
             </form>
           </div>
     </div>
+    {% from 'modal.html' import modal %}
+    {{ modal(
+        'submit',
+        'Overwrite existing analysis?',
+        'An analysis for the city exists already. Are you sure you want to delete it and create a new analysis?'
+    ) }}
 {% endblock %}

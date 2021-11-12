@@ -1,0 +1,25 @@
+{% macro modal(id, title, explanation) %}
+    <div id="modal_{{id}}" class="modal">
+        <div class="modal-content">
+            <h4>{{ title }}</h4>
+            <p>{{ explanation }}</p>
+        </div>
+        <div class="modal-footer">
+            <button id="button_{{id}}_yes" class="modal-close waves-effect waves-light btn">
+                <div id="button_{{id}}_yes_text">Yes</div>
+                <div id="button_{{id}}_yes_spinner" class="preloader-wrapper small" style="top:-36px;">
+                    <div class="spinner-layer spinner-green-only">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div><div class="gap-patch">
+                        <div class="circle"></div>
+                    </div><div class="circle-clipper right">
+                        <div class="circle"></div>
+                    </div>
+                    </div>
+                </div>
+            </button>
+            <button id="button_{{id}}_no" class="modal-close waves-effect waves-light btn">No</button>
+        </div>
+    </div>
+{% endmacro %}

@@ -28,6 +28,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"
         integrity="sha512-NiWqa2rceHnN3Z5j6mSAvbwwg3tiwVNxiAQaaSMSXnRRDh5C2mk/+sKQRw8qjV1vN4nf8iK2a0b048PnHbyx+Q=="
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   </head>
 
   <body>
@@ -35,10 +36,11 @@
     {% block content %}{% endblock %}
   </body>
 
-  <script src="static/env.js"></script>
-  <script src="static/map.js"></script>
-  <script src="static/gtfs_url.js"></script>
-  <script src="static/autocomplete.js"></script>
-  <script src="static/submit.js"></script>
+  <script src="{{ url_for('home') }}static/env.js"></script>
+  <script src="{{ url_for('home') }}static/map.js"></script>
+  <script src="{{ url_for('home') }}static/gtfs_url.js"></script>
+  <script src="{{ url_for('home') }}static/autocomplete.js"></script>
+  <script src="{{ url_for('home') }}static/submit.js"></script>
+  <script src="{{ url_for('home') }}static/delete.js"></script>
 
 </html>
