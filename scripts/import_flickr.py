@@ -36,7 +36,8 @@ class FlickrImporter(object):
             schema_translate_map={'schema': slug}
         )
         self.session = sessionmaker(bind=schema_engine)()
-        FlickrPoint.__table__.create(schema_engine, checkfirst=True)
+        FlickrPoint.__table__.drop(schema_engine, checkfirst=True)
+        FlickrPoint.__table__.create(schema_engine)
 
     def run(self):
         self.logger.info(f'Running flick import with bbox {self.bbox_string}...')

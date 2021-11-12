@@ -154,7 +154,7 @@ try:
 except IntegrityError:
     session.rollback()
     # there is an analysis for the city already. merge the datasets
-    logger.info(f"Analysis for {city} found already. Merging the analyses.")
+    logger.info(f"Analysis for {city} found already. Overwriting selected datasets.")
     analysis = session.query(Analysis).filter(Analysis.slug == slug).first()
     analysis.bbox = from_shape(box(*[float(coord) for coord in bbox]))
     analysis.viewed = False

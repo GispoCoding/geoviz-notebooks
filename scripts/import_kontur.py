@@ -50,7 +50,8 @@ class KonturImporter(object):
             schema_translate_map={'schema': slug}
         )
         self.session = sessionmaker(bind=schema_engine)()
-        KonturPoint.__table__.create(schema_engine, checkfirst=True)
+        KonturPoint.__table__.drop(schema_engine, checkfirst=True)
+        KonturPoint.__table__.create(schema_engine)
 
     def run(self):
         if os.path.isfile(self.download_file):

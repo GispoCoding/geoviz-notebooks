@@ -57,7 +57,8 @@ class GTFSImporter(object):
             schema_translate_map={'schema': slug}
         )
         self.session = sessionmaker(bind=schema_engine)()
-        GTFSStop.__table__.create(schema_engine, checkfirst=True)
+        GTFSStop.__table__.drop(schema_engine, checkfirst=True)
+        GTFSStop.__table__.create(schema_engine)
 
     def run(self):
         if not self.url:
