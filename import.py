@@ -74,8 +74,11 @@ export = args.get("export", False)
 
 # log each city separately
 log_file = os.path.join(os.path.dirname(__loader__.path), IMPORT_LOG_PATH, f"{slug}.log")
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 stdout_handler = logging.StreamHandler(sys.stdout)
 file_handler = logging.FileHandler(log_file)
 logger.addHandler(stdout_handler)
