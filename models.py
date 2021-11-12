@@ -1,9 +1,13 @@
 import datetime
+import json
 from sqlalchemy import Column, BigInteger, Boolean, DateTime, Index, Integer, String
 from sqlalchemy.sql import expression, func
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.inspection import inspect
 from geoalchemy2 import Geometry
+from geoalchemy2.shape import to_shape
+from shapely.geometry import mapping
 
 Base = declarative_base()
 
@@ -26,6 +30,12 @@ class Analysis(Base):
     finish_time = Column(DateTime)
     # set this field True once the user has seen the result
     viewed = Column(Boolean, nullable=False, default=False, server_default=expression.false())
+
+    def serialize(self):
+        attrs = {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+        # WKBelement doesn't jsonify
+        attrs['bbox'] = mapping(to_shape(attrs['bbox']))
+        return attrs
 
 
 # This is for data in slug-specific schemas
