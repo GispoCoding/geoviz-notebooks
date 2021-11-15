@@ -62,6 +62,12 @@ parser.add_argument("--export",
                     default=False,
                     help="Automatically run analysis and create result map at the end of import.",
                     )
+parser.add_argument("--delete",
+                    action="store_true",
+                    default=False,
+                    help="Delete imported data from the database when the visualization is finished. Default is False."
+                         " The result map is independent from the analysis database, so you may save a lot of disk space"
+                         " by deleting the data if you don't expect to create the map again.")
 
 args = vars(parser.parse_args())
 city = args["city"]
@@ -71,9 +77,13 @@ datasets = dataset_string.split()
 gtfs_url = args.get("gtfs", None)
 bbox = args.get("bbox", None)
 export = args.get("export", False)
+delete = args.get("delete", False)
 
 # log each city separately
-log_file = os.path.join(os.path.dirname(__loader__.path), IMPORT_LOG_PATH, f"{slug}.log")
+log_path = os.path.join(os.path.dirname(__loader__.path), IMPORT_LOG_PATH)
+if not os.path.exists(log_path):
+    os.mkdir(log_path)
+log_file = os.path.join(log_path, f"{slug}.log")
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.INFO,
@@ -237,7 +247,10 @@ if "kontur" in datasets:
 logger.info(f"--- Datasets {datasets} for {city} imported to PostGIS ---")
 if export:
     logger.info(f"--- Creating result map for {city} ---")
-    export_path = os.path.join(os.path.dirname(__loader__.path), f"export.py {slug} --datasets \'{dataset_string}\'")
+    export_string = f"export.py {slug} --datasets \'{dataset_string}\'"
+    if delete:
+        export_string += " --delete"
+    export_path = os.path.join(os.path.dirname(__loader__.path), export_string)
     os.system(export_path)
 
 analysis.finish_time = datetime.datetime.now()

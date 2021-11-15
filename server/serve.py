@@ -138,7 +138,8 @@ def home():
             bbox_string,
             "--gtfs",
             gtfs_url,
-            "--export"
+            "--export",
+            "--delete"  # by default, delete imported data after analysis since the UI won't need it
         ])
         processes[slugify(city_name)] = process
         sleep(3.0)

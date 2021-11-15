@@ -9,6 +9,7 @@ from ipygis import get_connection_url, QueryResult, generate_map
 from slugify import slugify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.schema import DropSchema
 from notebooks.kepler_h3_config import config  # we may use our own custom visualization config
 from osm_tags import tag_filter
 
@@ -21,11 +22,17 @@ parser.add_argument("--datasets",
                     default=" ".join([dataset for dataset in DATASETS]),
                     help="Datasets to include in analysis. Default is to use all imported data. E.g. \"osm access kontur\""
                     )
+parser.add_argument("--delete",
+                    action="store_true",
+                    default=False,
+                    help="Delete imported data from the database when the visualization is finished. Default is False."
+                         " The result map is independent from the analysis database, so you may save a lot of disk space"
+                         " by deleting the data if you don't expect to create the map again.")
 args = vars(parser.parse_args())
 # slugify city name just in case export was called with non-slug
 city = slugify(args["city"])
 datasets_to_export = args["datasets"].split()
-delete = args["delete"]
+delete = args.get("delete", False)
 
 # log each city separately
 log_file = os.path.join(os.path.dirname(__loader__.path), IMPORT_LOG_PATH, f"{city}.log")
@@ -80,9 +87,14 @@ columns = [
 ]
 
 result_map = generate_map(results, 500, config=config, column=columns, weights=weights)
-filename = os.path.join(
-    os.path.dirname(__loader__.path),
-    MAPS_PATH,
-    f"{city}.html"
-)
+map_path = os.path.join(os.path.dirname(__loader__.path), MAPS_PATH)
+if not os.path.exists(map_path):
+    os.mkdir(map_path)
+filename = os.path.join(map_path, f"{city}.html")
 result_map.save_to_html(file_name=filename)
+# delete interim database at the end, we have all the data we need on the map
+if delete:
+    logger.info(f"Deleting analysis database for {city}...")
+    engine.execute(DropSchema(city, cascade=True))
+
+logger.info(f"--- Datasets {datasets} for {city} exported to Kepler.gl ---")
