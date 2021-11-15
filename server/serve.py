@@ -76,7 +76,7 @@ def map_for_city(slug):
 @app.route('/logs/<string:slug>')
 @auth.login_required
 def log_for_city(slug):
-    return send_from_directory('../logs', f'{slug}.log')
+    return send_from_directory('../logs', f'{slug}.log', mimetype='text/plain')
 
 
 # no login needed, this is open source code
