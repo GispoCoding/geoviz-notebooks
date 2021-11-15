@@ -16,6 +16,8 @@ services:
     environment:
       - PGHOST=postgis
       - PGPASSWORD=postgres
+      - PGUSER=postgres
+      - PGDATABASE=geoviz
       - FLICKR_API_KEY
       - FLICKR_SECRET
       - OSM_EXTRACTS_API_KEY
