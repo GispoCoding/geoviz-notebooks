@@ -1,5 +1,6 @@
 # geoviz-notebooks
 <img width="913" alt="image" src="https://user-images.githubusercontent.com/9367712/130978610-dc3a6a7c-ed78-47c4-b380-fcd1b354126c.png">
+<img width="913" alt="image" src="https://user-images.githubusercontent.com/9367712/141969037-ae9674db-0037-48d7-b4f8-173929b73278.png">
 
 Python tool for analyzing geospatial data in cities.
 
@@ -110,6 +111,7 @@ or your https server at https://yourdomain.com:443 by
 cp server/flask.subdomain.conf server/swag/nginx/proxy-confs/
 docker-compose up serve
 ```
+<img width="1010" alt="image" src="https://user-images.githubusercontent.com/9367712/141968692-a75dc884-7766-4101-933c-1dbde0f6089e.png">
 
 You may import the city of your choice in the UI by
 1) selecting the datasets you desire,
@@ -122,8 +124,11 @@ The process will take a while depending on how many and which datasets you are i
 small datasets such as Ookla and Kontur data is very fast, while using the Flickr API will be particularly
 slow and will keep you waiting for a *long* time.
 
+<img width="1072" alt="image" src="https://user-images.githubusercontent.com/9367712/141968862-165a9303-ddc8-479e-b668-a150b418404f.png">
+
 You may look at how the request is processing by clicking the "View Log" button. Once the run is finished,
-click "View Results" to see all your datasets and the combination total index values on the hex map.
+click "View Results" to see all your datasets and the combination total index values on the hex map. All old
+import runs are listed under "Result maps".
 
 ## How to use the command line
 
