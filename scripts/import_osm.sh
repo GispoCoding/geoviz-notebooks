@@ -44,8 +44,8 @@ osm2pgsql -d geoviz -O flex $INPUT_FILE -S config.lua.tmp --slim
 # all data we want in point table
 echo "Postprocessing OSM tables..."
 # add primary key to prevent duplicate imports
-psql -d geoviz -c "alter table $3.osmpoints add primary key (node_id);"
+psql -d geoviz -c 'alter table "$3.osmpoints" add primary key (node_id);'
 # add polygon centroids as points; only add points not existing yet
-psql -d geoviz -c "insert into $3.osmpoints (
-    select -area_id as node_id, tags, st_centroid(geom) as geom from $3.osmpolygons
-) on conflict (node_id) do nothing;"
+psql -d geoviz -c 'insert into "$3.osmpoints" (
+    select -area_id as node_id, tags, st_centroid(geom) as geom from "$3.osmpolygons"
+) on conflict (node_id) do nothing;'
