@@ -16,7 +16,7 @@ echo "https://app.interline.io/osm_extracts/download_latest?string_id=$3\_$2\&da
 # 1) Try OSM extracts for the city first
 if test -f "$3.osm.pbf"; then
     echo "OSM extract for $3 found cached, importing to PostGIS..."
-elif curl --fail --location https://app.interline.io/osm_extracts/download_latest?string_id=$3\_$2\&data_format=pbf\&api_token=$4 -o $CITY.osm.pbf; then
+elif curl --fail --location https://app.interline.io/osm_extracts/download_latest?string_id=$3\_$2\&data_format=pbf\&api_token=$4 -o $3.osm.pbf; then
     echo "OSM extract for $3 downloaded, importing to PostGIS..."
 # 2) Fallback: download the whole country
 elif test -f "$2.osm.pbf"; then
