@@ -12,7 +12,29 @@ services:
       - ./logs:/app/logs
     depends_on:
       - osmnames
+    #  - postgis
+    environment:
+      - PGHOST=host.docker.internal
+      - PGPASSWORD=postgres
+      - PGUSER=postgres
+      - PGDATABASE=geoviz
+      - FLICKR_API_KEY
+      - FLICKR_SECRET
+      - OSM_EXTRACTS_API_KEY
+      - OSMNAMES_URL
+      - SECRET_KEY
+      - USERNAME
+      - PASSWORD_HASH
+  dev:
+    image: gispo/geoviz-server
+    container_name: dev-flask
+    volumes:
+      - .:/app
+    depends_on:
+      - osmnames
       - postgis
+    ports:
+      - "127.0.0.1:5000:5000"
     environment:
       - PGHOST=postgis
       - PGPASSWORD=postgres
@@ -25,6 +47,8 @@ services:
       - SECRET_KEY
       - USERNAME
       - PASSWORD_HASH
+    working_dir: /app/server
+    command: /app/server/start-dev.sh
   serve:
     image: ghcr.io/linuxserver/swag
     container_name: swag
