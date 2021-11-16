@@ -97,4 +97,4 @@ if delete:
     logger.info(f"Deleting analysis database for {city}...")
     engine.execute(DropSchema(city, cascade=True))
 
-logger.info(f"--- Datasets {datasets} for {city} exported to Kepler.gl ---")
+logger.info(f"--- Datasets {datasets_to_export} for {city} exported to Kepler.gl ---")
