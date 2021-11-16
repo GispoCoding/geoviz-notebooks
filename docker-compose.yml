@@ -12,9 +12,9 @@ services:
       - ./logs:/app/logs
     depends_on:
       - osmnames
-    #  - postgis
+      - postgis
     environment:
-      - PGHOST=host.docker.internal
+      - PGHOST=postgis
       - PGPASSWORD=postgres
       - PGUSER=postgres
       - PGDATABASE=geoviz
