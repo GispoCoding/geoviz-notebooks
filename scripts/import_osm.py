@@ -21,19 +21,21 @@ class OsmImporter(object):
         args = self._parse_args(args)
         self.slug = args["slug"]
         self.bbox = args["bbox"]
-        self.city = args["city_name"]
         self._engine = self._create_engine()
 
     @staticmethod
     def _parse_args(args) -> Dict:
         """Parse input arguments to a dict."""
-        slug = args["city"]
+        slug = args["slug"]
         if not slug:
             raise AssertionError("You must specify the city name.")
-        self.slug = slug
-        self.bbox = bbox
-        self.city = city_name
-        self._engine = self._create_engine()
+
+        arg_bbox = args["bbox"]
+        if not arg_bbox:
+            raise AssertionError("You must specify a bounding box or a known city.")
+
+        minx, miny, maxx, maxy = map(float, arg_bbox.split(", "))
+        return {"slug": slug, "bbox": (minx, miny, maxx, maxy)}
 
     def _create_engine(self) -> Engine:
         """Sets up and returns a DB engine."""
@@ -77,19 +79,16 @@ class OsmImporter(object):
         OSMPoint.__table__.create(self._engine)
 
     def _get_amenities(self):
-        try:
-            (minx, miny, maxx, maxy) = self.bbox
-            return ox.geometries.geometries_from_bbox(maxy, miny, maxx, minx, tags=tags_to_filter)
-        except (TypeError, ValueError):
-            return ox.geometries.geometries_from_place(self.city, tags=tags_to_filter)
+        (minx, miny, maxx, maxy) = self.bbox
+        return ox.geometries.geometries_from_bbox(maxy, miny, maxx, minx, tags=tags_to_filter)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Import OSM data for given bounding box."
     )
+    parser.add_argument("--slug", help="City to import")
     parser.add_argument("--bbox", default=None, help="Boundingbox to import")
-    parser.add_argument("--city", help="City to import")
     input_args = vars(parser.parse_args())
 
     OsmImporter(input_args).run()

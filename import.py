@@ -15,6 +15,7 @@ from scripts.import_flickr import FlickrImporter
 from scripts.import_gtfs import GTFSImporter
 from scripts.import_kontur import KonturImporter
 from scripts.import_ookla import OoklaImporter
+from scripts.import_osm import OsmImporter
 from scripts.import_osm_accessibility import AccessibilityImporter
 from shapely.geometry import box
 from slugify import slugify
@@ -27,23 +28,6 @@ from sqlalchemy_utils.functions import database_exists, create_database
 from models import Analysis
 
 IMPORT_LOG_PATH = 'logs'
-
-CONTINENTS = [
-    "europe",
-    "africa",
-    "asia",
-    "north-america",
-    "central-america",
-    "south-america",
-    "australia-oceania",
-    "antarctica",
-]
-# some countries are known in nominatim, osmextracts and geofabrik by different names
-# even with the same en language code :(
-# format is "nominatim-name": "pbf-name"
-COUNTRIES = {
-    "czechia": "czech-republic"
-}
 
 load_dotenv()
 osm_extracts_api_key = os.getenv("OSM_EXTRACTS_API_KEY")
@@ -108,7 +92,6 @@ if osmnames_url:
         bbox = bbox.split()
     else:
         bbox = city_data["boundingbox"]
-    country = city_data["country"]
 else:
     logger.info("Geocode using Nominatim...")
     # Fall back to Nominatim. Their API doesn't always respond tho.
@@ -125,18 +108,6 @@ else:
         bbox = [city_data["boundingbox"][i] for i in [2, 0, 3, 1]]
     centroid = [city_data["lon"], city_data["lat"]]
     logger.info(f"{city} centroid {centroid}")
-
-    country_params = {
-        "lat": centroid[1],
-        "lon": centroid[0],
-        "zoom": 3,
-        "format": "json",
-        "namedetails": 1,
-    }
-    country_data = requests.get(
-        "https://nominatim.openstreetmap.org/reverse", params=country_params
-    ).json()
-    country = country_data["namedetails"]["name:en"]
 
 # bbox must always be float
 bbox = [float(coord) for coord in bbox]
@@ -191,23 +162,13 @@ def mark_imported(dataset: str):
 
 
 logger.info(f"{city} bounding box {bbox}")
-logger.info(f"{city} country {country}")
 
-country = country.lower()
-# some countries are known in nominatim, osmextracts and geofabrik by different names
-if country in COUNTRIES:
-    country = COUNTRIES[country]
-
-# OSM data needs to be imported first, will create the database
 if "osm" in datasets:
     logger.info(f"--- Importing OSM data for {city} ---")
-    import_path = os.path.join(os.path.dirname(__loader__.path), "scripts", "import_osm.sh")
-    for continent in CONTINENTS:
-        # Nominatim does not provide us with the continent. Will have to do some guessing
-        if not os.system(f"{import_path} {continent} {country} {slug} {osm_extracts_api_key}"):
-            # success!
-            mark_imported("osm")
-            break
+    osm_importer = OsmImporter({"slug": slug, "bbox": ", ".join([str(coord) for coord in bbox]),
+                                "logger": logger})
+    osm_importer.run()
+    mark_imported("osm")
 
 if "flickr" in datasets:
     logger.info(f"--- Importing Flickr data for {city} ---")

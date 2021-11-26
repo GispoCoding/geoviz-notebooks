@@ -87,11 +87,6 @@ If you wish to import data from the Flickr API, fill in your
 [Flickr api key](https://www.flickr.com/services/api/misc.api_keys.html) and secret
 in a `.env` file or the corresponding environment variable.
 
-If you wish to import OSM data faster by using city-specific
-[OSM extracts](https://www.interline.io/osm/extracts/), fill in your
-[OSM extracts api key](https://app.interline.io/products/osm_extracts/orders/new)
-in a `.env` file or the corresponding environment variable.
-
 To get https certificates, you need to add
 your own domain and subdomain in [docker-compose.yml#L17] and your
 AWS access credentials in server/swag/dns-conf/route53.ini , or read [Swag instructions](https://docs.linuxserver.io/general/swag#create-container-via-dns-validation-with-a-wildcard-cert) and change DNSPLUGIN value at [docker-compose.yml#L20] if you are running on a provider

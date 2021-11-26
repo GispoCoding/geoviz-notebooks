@@ -22,10 +22,12 @@ def db_engine(postgres):
 def helsinki_importer(db_engine):
     """Setup a OsmImporter for Helsinki using the test database."""
     slug_string = "Helsinki"
-    minx, miny, maxx, maxy = 24.82345, 60.14084, 25.06404, 60.29496
-    city_name = "Helsinki, Finland"
+    args = {
+        "city": slug_string,
+        "bbox": "24.82345, 60.14084, 25.06404, 60.29496",
+    }
 
-    helsinki_importer = OsmImporter(slug=slug_string, bbox=(minx, miny, maxx, maxy), city_name=city_name)
+    helsinki_importer = OsmImporter(args)
     helsinki_importer._engine = db_engine.execution_options(
         schema_translate_map={"schema": slug_string}
     )
