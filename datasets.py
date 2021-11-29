@@ -18,20 +18,20 @@ DATASETS = {
     'osm': {
         'label': 'OpenStreetMap amenities',
         'model': OSMPoint,
-        'name': 'places',
+        'name': 'Number of amenities',
         'weight': 1
     },
     'flickr': {
-        'label': 'Flickr images',
+        'label': 'Flickr photographers',
         'model': FlickrPoint,
-        'name': 'photographers',
+        'name': 'Number of photographers',
         'group_by': 'properties.owner',
         'weight': 1
     },
     'gtfs': {
-        'label': 'GTFS transit stops',
+        'label': 'GTFS departures',
         'model': GTFSStop,
-        'name': 'trips',
+        'name': 'Transit departures per day',
         'plot': 'sum',
         'column': 'properties.ntrips',
         'weight': 1
@@ -39,7 +39,7 @@ DATASETS = {
     'access': {
         'label': 'OpenStreetMap walking times',
         'model': OSMAccessNode,
-        'name': 'access',
+        'name': 'Walking times to five amenities',
         'plot': 'mean',
         'column': 'accessibilities.5',
         'weight': -1
@@ -47,7 +47,7 @@ DATASETS = {
     'ookla': {
         'label': 'Ookla Internet device numbers',
         'model': OoklaPoint,
-        'name': 'devices',
+        'name': 'Internet device numbers',
         'plot': 'sum',
         'column': 'properties.devices',
         'weight': 1
@@ -55,7 +55,7 @@ DATASETS = {
     'kontur': {
         'label': 'Kontur population density',
         'model': KonturPoint,
-        'name': 'population',
+        'name': 'Population density',
         'plot': 'sum',
         'column': 'properties.population',
         'weight': 1
