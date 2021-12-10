@@ -1,0 +1,94 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <div class="container">
+        <h4>{{title}}</h1>
+        {% if running %}
+            <p>Import and analysis is running at the moment. You may still start a new analysis, but running
+            multiple imports and analyses at the same time will slow down processing, and may crash current
+            analysis if too many large datasets are processed simultaneously.
+            
+            This page does not update automatically, please reload the page or come back later to check if
+            processing is finished.</p>
+        {% endif %}
+        {% if analyses %}
+            {% include 'analyses.html' %}
+        {% endif %}
+        <hr>
+        <p>{{description}}</p>
+        <div class="form-wrapper">
+      
+            <form id="import_form" method="POST" action="{{ url_for('home') }}">
+                {{ form.csrf_token }}
+                <div class="row">
+                    <div class="col m12 l5">
+                        <fieldset class="form-field">
+                            {{ form.dataset_selection.label }}
+                            {{ form.dataset_selection }}
+                            {% for error in form.dataset_selection.errors %}
+                                <div class="card-panel red lighten-2">
+                                    <span class="white-text">{{ error }}</span>
+                                </div>
+                            {% endfor %}
+                        </fieldset>
+            
+                        <fieldset class="form-field">
+                            {{ form.flickr_apikey.label }}
+                            {{ form.flickr_apikey }}
+                        </fieldset>
+            
+                        <fieldset class="form-field">
+                            {{ form.mapbox_apikey.label }}
+                            {{ form.mapbox_apikey }}
+                        </fieldset>
+                    </div>
+                    <div class="col m12 l7">
+                        <fieldset class="form-field">
+                            {{ form.bbox.csrf_token }}
+                            {{ form.bbox.map }}
+                            {{ form.bbox.city.label }}
+                            {{ form.bbox.city(autocomplete="off") }}
+                            {% for error in form.bbox.city.errors %}
+                                <div class="card-panel red lighten-2">
+                                    <span class="white-text">{{ error }}</span>
+                                </div>
+                            {% endfor %}
+                            {{ form.bbox.bbox.label }}
+                            {{ form.bbox.bbox(readonly=true) }}
+                        </fieldset>
+                        <fieldset class="form-field">
+                            {{ form.gtfs_url.label }}
+                            {{ form.gtfs_url }}
+                            {% for error in form.gtfs_url.errors %}
+                                <div class="card-panel red lighten-2">
+                                    <span class="white-text">{{ error }}</span>
+                                </div>
+                            {% endfor %}
+                        </fieldset>
+                    </div>
+                </div>
+                <button id="import_button" type="submit" title="{{ form.import_button.label.text }}" class="waves-effect waves-light btn right">
+                    <div id="import_button_text">{{ form.import_button.label.text }}</div>
+                    <div id="import_button_spinner" class="preloader-wrapper small" style="top:-36px;">
+                        <div class="spinner-layer spinner-green-only">
+                        <div class="circle-clipper left">
+                            <div class="circle"></div>
+                        </div><div class="gap-patch">
+                            <div class="circle"></div>
+                        </div><div class="circle-clipper right">
+                            <div class="circle"></div>
+                        </div>
+                        </div>
+                    </div>
+                </button>
+                    <!-- {{ form.import_button(class="waves-effect waves-light btn right")}} -->
+            </form>
+          </div>
+    </div>
+    {% from 'modal.html' import modal %}
+    {{ modal(
+        'submit',
+        'Overwrite existing analysis?',
+        'An analysis for the city exists already. Are you sure you want to delete it and create a new analysis?'
+    ) }}
+{% endblock %}

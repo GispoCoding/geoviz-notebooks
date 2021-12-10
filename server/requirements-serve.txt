@@ -1,0 +1,4 @@
+# Web server extra requirements, installed in addition to requirements.txt
+Flask==2.0.2
+Flask-HTTPAuth==4.5.0
+flask-wtf==0.15.1

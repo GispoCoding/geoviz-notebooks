@@ -1,0 +1,102 @@
+services:
+  osmnames:
+    image: klokantech/osmnames-sphinxsearch
+    container_name: osmnames
+  flask:
+    image: gispo/geoviz-server
+    container_name: flask
+    volumes:
+      - /tmp/flask:/tmp/flask
+      - ./data:/app/data
+      - ./maps:/app/server/maps
+      - ./logs:/app/logs
+    depends_on:
+      - osmnames
+      - postgis
+    environment:
+      - PGHOST=postgis
+      - PGPASSWORD=postgres
+      - PGUSER=postgres
+      - PGDATABASE=geoviz
+      - FLICKR_API_KEY
+      - FLICKR_SECRET
+      - OSM_EXTRACTS_API_KEY
+      - OSMNAMES_URL
+      - SECRET_KEY
+      - USERNAME
+      - PASSWORD_HASH
+  dev:
+    image: gispo/geoviz-server
+    container_name: dev-flask
+    volumes:
+      - .:/app
+    depends_on:
+      - osmnames
+      - postgis
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      - PGHOST=postgis
+      - PGPASSWORD=postgres
+      - PGUSER=postgres
+      - PGDATABASE=geoviz
+      - FLICKR_API_KEY
+      - FLICKR_SECRET
+      - OSM_EXTRACTS_API_KEY
+      - OSMNAMES_URL
+      - SECRET_KEY
+      - USERNAME
+      - PASSWORD_HASH
+    working_dir: /app/server
+    command: /app/server/start-dev.sh
+  serve:
+    image: ghcr.io/linuxserver/swag
+    container_name: swag
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Helsinki
+      - URL=gispocoding.fi
+      - SUBDOMAINS=geoviz,geoviz-test
+      - VALIDATION=dns
+      - DNSPLUGIN=route53
+    volumes:
+      - ./server/swag/:/config
+      - /tmp/flask/uwsgi.sock:/tmp/flask/uwsgi.sock
+    ports:
+      - 443:443
+      - 80:80
+    depends_on:
+      - flask
+    restart: always
+  postgis:
+    image: postgis/postgis
+    container_name: postgis
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data/pgdata
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=postgres
+  notebook:
+    image: gispo/geoviz-notebook
+    container_name: notebook
+    volumes:
+      - .:/home/jovyan
+    ports:
+      - "127.0.0.1:8888:8888"
+    depends_on:
+      - osmnames
+      - postgis
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    environment:
+      - PGHOST=postgis
+      - PGPASSWORD=postgres
+      - FLICKR_API_KEY
+      - FLICKR_SECRET
+      - OSM_EXTRACTS_API_KEY
+      - OSMNAMES_URL

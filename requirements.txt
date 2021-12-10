@@ -1,14 +1,22 @@
 # Our own requirements
 flickrapi
+GDAL==3.0.4  # GDAL>=3.1 doesn't build with docker: https://github.com/thinkWhere/GDAL-Docker/blob/develop/3.8-ubuntu/Dockerfile#L32
 geoalchemy2
-gtfs-functions
+# use our own gtfs fork until gtfs-functions is pandas v1 compatible
+git+https://github.com/GispoCoding/gtfs_functions.git
 h3
 jupyterlab
 osmnx
-pandana
+# use our own pandana fork until https://github.com/UDST/pandana/issues/170 is resolved
+git+https://github.com/GispoCoding/pandana.git
 pandas
 psycopg2-binary
+pyshp
 python-dotenv
+python-slugify
+requests
+sqlalchemy>1.4
+sqlalchemy-utils
 
 # Our GIS tools
 git+https://github.com/GispoCoding/ipygis.git
