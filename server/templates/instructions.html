@@ -2,7 +2,7 @@
 
 {% block content %}
 	<h1>Instructions</h1>
-		<h2>TLDR</h2>
+		<h2>Analysis process in a nutshell</h2>
 			<ol>
 			  <li>Select the datasets you want to include in the analysis</li>
 			  <li>Select the area of interest from the map view</li>
@@ -10,36 +10,88 @@
 			  <li>View results on the from the map tab</li>			  
 			</ol> 
 			
-		<h2>The full story</h2>	
+		<h2>Output attributes</h2>	
+				
+			<dl>
+			  <dt>OpenStreetMap amenities</dt>
+			  <dd>-Number of OpenStreetMap amenities. Basically describes the level of services.</dd>
+			  <dt>Flickr photographers</dt>
+			  <dd>-Number of unique Flickr photographers</dd>
+			  <dt>GTFS departures</dt>
+			  <dd>- Transit departures per day</dd>
+			  <dt>OpenStreetMap walking times</dt>
+			  <dd>-Walking time in seconds to the fifth closest POI/dd>
+			  <dt>Ookla Internet device numbers</dt>
+			  <dd>-Number of unique interenet connected devices which have been using the Ookla speedtest</dd>
+			  <dt>Kontur population density</dt>
+			  <dd>-Population density</dd>
+			</dl>
+
 			
+		<h2>Datasets</h2>	
+		
+			<h4>OpenStreeMap amenities</h4>					
+			<p><a href="https://www.openstreetmap.org/">OpenStreetMap (OSM)</a> is the main source of services in the analysis.</p>
+			<p>Selecting appropriate tags from OpenStreetMap data is one of the most fundamental tasks in the analysis process. The selected tags are based on examples from scientific literature. The tags used currently are listed below:</p>
+					<p> <code>    "amenity": [
+									"restaurant",
+									"bar",
+									"pub",
+									"biergarten",
+									"cafe",
+									"food",
+									"marketplace",
+									"fast_food",
+									"food_court",
+									"ice_cream",
+									"arts_centre",
+									"cinema",
+									"club",
+									"community_centre",
+									"library",
+									"nightclub",
+									"theatre",
+									"place_of_worship",
+									"public_bath"
+									]</code></p>
+					<p> <code>"shop": True</code></p>
+					<p> <code>    "leisure": [
+							"park",
+							"pitch",
+							"playground",
+							"fitness_centre",
+							"fitness_station",
+							"sports_centre",
+							"sports_hall",
+							"swimming_area",
+							"swimming_pool",
+							"sauna"
+							]</code></p>
+					<p> <code>    "tourism": [
+							"museum",
+							"gallery",
+							"picnic_site"
+							]</code></p>
+			
+			<h4>Flickr images</h4>					
+			<p>Flickr is an image and video hosting service with a large community of users. In 2021 the platform has more than 100 million registered accounts and over 60 million monthly users. Up to 25 million photos are uploaded daily. Analysing these photos and especially their locations reveals interesting insights about the dynamics of an urban area. Flickr data has been used in a multitude of scientific studies, for example to detect areas of activity, to study spatiotemporal urban patterns, and to highlight urban hotspots especially in the context of travel and tourism</p>
+			<p>The Flickr import downloads all image locations from the last 5 years.</p>
+			<p>To use the Flickr API, you should acquire an API key.</p>
+			
+			<h4>GTFS transit stops</h4>					
+			<p>GTFS is a common format, originally developed by Google, for public transportation schedules and associated geographic information. Cities and public transportation agencies share their schedule information most commonly in the GTFS format. </p>
 			<p></p>
 			
-			<h3>Datasets</h3>	
+			<h4>OpenStreetMap walking times</h4>					
+			<p>Whereas accessibility with public transport gives an idea of longer distances, walkability helps in understanding the attractiveness of a place on a more detailed scale.  At this scale distances are short, so walking becomes an important method of transportation. To model this aspect of accessibility, we analyzed the walkable street networks of the cities by calculating walking times from every location in the street network to certain points of interest (POIs).</p>
+			<p></p>
+
+			<h4>Ookla internet device numbers</h4>					
+			<p>Ookla offers worldwide datasets of Internet speeds as measured by their broadband speed test service. The datasets cover the entire globe in a sub-kilometer resolution grid, and they are therefore an excellent independent measure of broadband speeds and user numbers across the globe.</p>
+			<p></p>
 			
-				<h4>OpenStreeMap amenities</h4>					
-				<p><a href="https://www.openstreetmap.org/">OpenStreetMap (OSM)</a> is the main source of services in the analysis.</p>
-				<p>Selecting appropriate tags from OpenStreetMap data is one of the most fundamental tasks in the analysis process. The selected tags are based on examples from scientific literature. .</p>
-
-				
-				<h4>Flickr images</h4>					
-				<p>Flickr is an image and video hosting service with a large community of users. In 2021 the platform has more than 100 million registered accounts and over 60 million monthly users. Up to 25 million photos are uploaded daily. Analysing these photos and especially their locations reveals interesting insights about the dynamics of an urban area. Flickr data has been used in a multitude of scientific studies, for example to detect areas of activity, to study spatiotemporal urban patterns, and to highlight urban hotspots especially in the context of travel and tourism</p>
-				<p>The Flickr import downloads all image locations from the last 5 years.</p>
-				<p>To use the Flickr API, you should acquire an API key.</p>
-				
-				<h4>GTFS transit stops</h4>					
-				<p>GTFS is a common format, originally developed by Google, for public transportation schedules and associated geographic information. Cities and public transportation agencies share their schedule information most commonly in the GTFS format. </p>
-				<p></p>
-				
-				<h4>OpenStreetMap walking times</h4>					
-				<p>Whereas accessibility with public transport gives an idea of longer distances, walkability helps in understanding the attractiveness of a place on a more detailed scale.  At this scale distances are short, so walking becomes an important method of transportation. To model this aspect of accessibility, we analyzed the walkable street networks of the cities by calculating walking times from every location in the street network to certain points of interest (POIs).</p>
-				<p></p>
-
-				<h4>Ookla internet device numbers</h4>					
-				<p>Ookla offers worldwide datasets of Internet speeds as measured by their broadband speed test service. The datasets cover the entire globe in a sub-kilometer resolution grid, and they are therefore an excellent independent measure of broadband speeds and user numbers across the globe.</p>
-				<p></p>
-				
-				<h4>Kontur population density</h4>					
-				<p>For this analysis the demographic dataset of choice was the Kontur population grid. It is an openly available and global population data set consisting of multiple different components: A satellite-imagery-based global human settlement layer, Facebook’s population data, Copernicus land cover, OpenStreetMap data and Microsoft building footprints. By combining these data sets the Kontur population grid not only achieves global coverage, but also a high degree of interoperability as the methodology is standardized across the globe. For these reasons the data set was chosen for the analysis - it provides a scalable approach to analysing the population of any location anywhere in the world.</p>
-				<p></p>
+			<h4>Kontur population density</h4>					
+			<p>For this analysis the demographic dataset of choice was the Kontur population grid. It is an openly available and global population data set consisting of multiple different components: A satellite-imagery-based global human settlement layer, Facebook’s population data, Copernicus land cover, OpenStreetMap data and Microsoft building footprints. By combining these data sets the Kontur population grid not only achieves global coverage, but also a high degree of interoperability as the methodology is standardized across the globe. For these reasons the data set was chosen for the analysis - it provides a scalable approach to analysing the population of any location anywhere in the world.</p>
+			<p></p>
 
 {% endblock %}
