@@ -86,8 +86,8 @@
 			
 			<h4>Flickr images</h4>					
 			<p>Flickr is an image and video hosting service with a large community of users. In 2021 the platform has more than 100 million registered accounts and over 60 million monthly users. Up to 25 million photos are uploaded daily. Analysing these photos and especially their locations reveals interesting insights about the dynamics of an urban area. Flickr data has been used in a multitude of scientific studies, for example to detect areas of activity, to study spatiotemporal urban patterns, and to highlight urban hotspots especially in the context of travel and tourism</p>
-			<p>The Flickr import downloads all image locations from the last 5 years.</p>
-			<p>To use the Flickr API, you should acquire an API key.</p>
+			<p>The Flickr import automatically downloads all image locations from the last 5 years. With the current setup this part of the analysis is the longest and takes ~30 minutes per city region.</p>
+			<p><a href="https://www.businessinsider.com/flickr-data-shows-where-tourists-and-locals-take-pictures-2011-6?r=US&IR=T#las-vegas-just-try-getting-directions-on-the-strip-4">View how the Flickr location data has been used to analyze spatial patternt of tourists vs. locals</a></p>
 			
 			<h4>GTFS transit stops</h4>					
 			<p>GTFS is a common format, originally developed by Google, for public transportation schedules and associated geographic information. Cities and public transportation agencies share their schedule information most commonly in the GTFS format. </p>
@@ -97,7 +97,7 @@
 				<p>A good source to search for GTFS feeds is <a href="https://openmobilitydata.org/feeds"> openmobilitydata.org</a>, where you can search by city/region name. For some countries individual city feeds are non-existent, but in these cases you can use the national feed (e.g. <a href="https://gtfs.de/en/feeds/de_nv/"> Germany</a> and <a href="https://nordicopenmobilitydata.eu/data/"> Sweden</a>). </p>
 
 			<h4>OpenStreetMap walking times</h4>					
-			<p>Whereas accessibility with public transport gives an idea of longer distances, walkability helps in understanding the attractiveness of a place on a more detailed scale.  At this scale distances are short, so walking becomes an important method of transportation. To model this aspect of accessibility, we analyzed the walkable street networks of the cities by calculating walking times from every location in the street network to certain points of interest (POIs).</p>
+			<p>Whereas accessibility with public transport gives an idea of longer distances, walkability helps in understanding the attractiveness of a place on a more detailed scale.  At this scale distances are short, so walking becomes an important method of transportation. To model this aspect of accessibility, the services analyzes the walkable street networks of the cities by calculating walking times from every location in the street network to certain points of interest (POIs).</p>
 			<p><a href="https://www.gispo.fi/en/blog/analysing-urban-walkability-using-openstreetmap-and-python/">Read more about the walkability analysis.</a></p>
 
 			<h4>Ookla internet device numbers</h4>					
