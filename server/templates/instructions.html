@@ -2,30 +2,41 @@
 
 {% block content %}
 	<h1>Instructions</h1>
-		<h2>Analysis process in a nutshell</h2>
+		<h2>Analysis process in short</h2>
 			<ol>
 			  <li>Select the datasets you want to include in the analysis</li>
 			  <li>Select the area of interest from the map view</li>
-			  <li>Click import datasets</li>
+			  <li>If you want to include public transit analysis, add the URL to the relevant GTFS feed</li>
+			  <li>Click <strong>import datasets</strong> </li>
+			  <li>Wait for the process to finish</li>		
 			  <li>View results on the from the map tab</li>			  
 			</ol> 
 			
 		<h2>Output attributes</h2>	
+			
+			<p>When you view the result maps, you will see that they include several attributes describing that particular hexagon. Below are short explanations of each attribute.</p>
+				<dl>
+				<dt><strong>Sum</strong></dt>
+				<dd>An index value comprised from all other attributes. The value is normalized for each individual map. This means that e.g. the hexagon containing the highest value of transit departures per day gets an index value of 1 and then other hexagons get a value relative to the highest value. This means that the theoretical maximum value for the sum index is the number of variables (datasources) used.</dd>
 				
-			<dl>
-			  <dt>OpenStreetMap amenities</dt>
-			  <dd>-Number of OpenStreetMap amenities. Basically describes the level of services.</dd>
-			  <dt>Flickr photographers</dt>
-			  <dd>-Number of unique Flickr photographers</dd>
-			  <dt>GTFS departures</dt>
-			  <dd>- Transit departures per day</dd>
-			  <dt>OpenStreetMap walking times</dt>
-			  <dd>-Walking time in seconds to the fifth closest POI/dd>
-			  <dt>Ookla Internet device numbers</dt>
-			  <dd>-Number of unique interenet connected devices which have been using the Ookla speedtest</dd>
-			  <dt>Kontur population density</dt>
-			  <dd>-Population density</dd>
-			</dl>
+				<dt><strong>OpenStreetMap amenities</strong></dt>
+				<dd>Number of OpenStreetMap amenities inside the hexagon. Describes the level of services.</dd>
+
+				<dt><strong>Flickr photographers</strong></dt>
+				<dd>Number of unique Flickr photographers inside the hexagon in the last 5 years.</dd>
+
+				<dt><strong>GTFS departures</strong></dt>
+				<dd>Transit departures per day from this hexagon</dd>
+
+				<dt><strong>OpenStreeMap walking times</strong></dt>
+				<dd>Walking time from this hexagon in seconds to the fifth closest service.</dd>
+
+				<dt><strong> Ookla Internet device numbers</strong></dt>
+				<dd>Number of unique interenet connected devices in this hexagon which have been using the Ookla speedtest.</dd>
+
+				<dt><strong>Kontur population density</strong></dt>
+				<dd>How many people are estimated to live inside the hexagon.</dd>
+				</dl>
 
 			
 		<h2>Datasets</h2>	
@@ -80,18 +91,23 @@
 			
 			<h4>GTFS transit stops</h4>					
 			<p>GTFS is a common format, originally developed by Google, for public transportation schedules and associated geographic information. Cities and public transportation agencies share their schedule information most commonly in the GTFS format. </p>
-			<p></p>
-			
+			<p><a href="https://developers.google.com/transit/gtfs">Read more about GTFS data.</a></p>
+				<h5>Where to find GTFS data</h5>
+				<p>Other data sources are downloaded automatically by the service, but as a single endpoint to all GTFS feeds in the world does not exist, the user must enter manually the GTFS URL to the user interface when running the analysis. The URL should be ending with a <code>.zip</code>. So for example for Helsinki region the valid URL is http://dev.hsl.fi/gtfs/hsl.zip.  </p>	
+				<p>A good source to search for GTFS feeds is <a href="https://openmobilitydata.org/feeds"> openmobilitydata.org</a>, where you can search by city/region name. For some countries individual city feeds are non-existent, but in these cases you can use the national feed (e.g. <a href="https://gtfs.de/en/feeds/de_nv/"> Germany</a> and <a href="https://nordicopenmobilitydata.eu/data/"> Sweden</a>). </p>
+
 			<h4>OpenStreetMap walking times</h4>					
 			<p>Whereas accessibility with public transport gives an idea of longer distances, walkability helps in understanding the attractiveness of a place on a more detailed scale.  At this scale distances are short, so walking becomes an important method of transportation. To model this aspect of accessibility, we analyzed the walkable street networks of the cities by calculating walking times from every location in the street network to certain points of interest (POIs).</p>
-			<p></p>
+			<p><a href="https://www.gispo.fi/en/blog/analysing-urban-walkability-using-openstreetmap-and-python/">Read more about the walkability analysis.</a></p>
 
 			<h4>Ookla internet device numbers</h4>					
 			<p>Ookla offers worldwide datasets of Internet speeds as measured by their broadband speed test service. The datasets cover the entire globe in a sub-kilometer resolution grid, and they are therefore an excellent independent measure of broadband speeds and user numbers across the globe.</p>
-			<p></p>
+			<p><a href="https://github.com/teamookla/ookla-open-data">Read more about the Ookla data.</a></p>
 			
 			<h4>Kontur population density</h4>					
 			<p>For this analysis the demographic dataset of choice was the Kontur population grid. It is an openly available and global population data set consisting of multiple different components: A satellite-imagery-based global human settlement layer, Facebook’s population data, Copernicus land cover, OpenStreetMap data and Microsoft building footprints. By combining these data sets the Kontur population grid not only achieves global coverage, but also a high degree of interoperability as the methodology is standardized across the globe. For these reasons the data set was chosen for the analysis - it provides a scalable approach to analysing the population of any location anywhere in the world.</p>
-			<p></p>
+			<p>Population data is built from H3 hexagons with population counts at 400m resolution.</p>
+			<p><a href="https://data.humdata.org/dataset/kontur-population-dataset">Read more about Kontur population density data.</a></p>
+
 
 {% endblock %}
