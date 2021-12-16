@@ -45,6 +45,15 @@ def verify_password(username, password):
         return username
 
 
+@app.route('/instructions/')
+@auth.login_required
+def instructions():
+    return render_template(
+        'instructions.html',
+        title="Instructions"
+    )
+
+
 # retain this for now to allow access to old public schema map
 @app.route('/map')
 @auth.login_required
