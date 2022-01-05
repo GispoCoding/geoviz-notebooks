@@ -1,8 +1,7 @@
 import argparse
-import calendar
+import datetime
 import os
 import sys
-import time
 from flickrapi import FlickrAPI, FlickrError
 from dotenv import load_dotenv
 from ipygis import get_connection_url
@@ -17,19 +16,38 @@ sys.path.insert(0, "..")
 from models import FlickrPoint
 
 
-class FlickrImporter(object):
 
+class FlickrImporter:
     def __init__(self, slug: str, bbox: Tuple, logger: Logger):
+        """Sets the initial parameters, connects to flickr and database"""
+
         self.logger = logger
         if not slug:
             raise AssertionError("You must specify the city name.")
+        
         # BBOX (minx, miny, maxx, maxy)
-        self.bbox_string = ",".join([str(coord) for coord in bbox])
-        # save api key to env variable if found
-        load_dotenv()
-        self.flickr_api_key = os.getenv("FLICKR_API_KEY")
-        self.flickr_secret = os.getenv("FLICKR_SECRET")
+        total_bbox = tuple(float(coord) for coord in bbox)
+        # Set temporal extent
+        end_date = datetime.datetime.today()
+        start_date = end_date - datetime.timedelta(days=3*365)
+        # List for api request parameter tuples
+        self.params_list = [(total_bbox, start_date, end_date)]
+        
+        # list for photos
+        self.photos = []
+        # Keep track of used parameter combos and amount of queries
+        self.used_params = []
+        self.q_count = 0
 
+        # Connect to flickr
+        load_dotenv()
+        self.flickr = FlickrAPI(
+            os.getenv("FLICKR_API_KEY"),
+            os.getenv("FLICKR_SECRET"),
+            format="parsed-json"
+        )
+
+        # Database
         sql_url = get_connection_url(dbname="geoviz")
         engine = create_engine(sql_url)
         schema_engine = engine.execution_options(
@@ -39,115 +57,170 @@ class FlickrImporter(object):
         FlickrPoint.__table__.drop(schema_engine, checkfirst=True)
         FlickrPoint.__table__.create(schema_engine)
 
+
     def run(self):
-        self.logger.info(f'Running flick import with bbox {self.bbox_string}...')
-        # List for photos
-        photos = []
+        """The main download loop
+        
+        Loops through the API request parameters in self.params_list, sends
+        API queries and and fills self.params_list with new parameters as
+        needed.
+        """
 
-        # List for years
-        years_list = list(range(2017, 2022))
+        for params in self.params_list:
+            # bbox and dates as variabes
+            self.bbox = params[0]
+            self.min_date = params[1]
+            self.max_date = params[2]
+            self.min_date_str = (
+                f"{self.min_date.year}-"
+                f"{self.min_date.month:02}-"
+                f"{self.min_date.day:02} 00:00:00"
+            )
+            self.max_date_str = (
+                f"{self.max_date.year}-"
+                f"{self.max_date.month:02}-"
+                f"{self.max_date.day:02} 00:00:00"
+            )
+            # Print info
+            self.logger.info(f"\nbbox: {self.bbox}")
+            self.logger.info(f"  From: {self.min_date_str}")
+            self.logger.info(f"  To:   {self.max_date_str}")
+    
+            # A failsafe
+            if params in self.used_params:
+                raise AssertionError("Params already used, stuck in a loop -> Breaking")
+            self.used_params.append(params)
+    
+            # Start reading photos from page 1
+            page = 1
+            # Get photos
+            while True:
+                # Flickr's query limit
+                if self.q_count > 3600:
+                    raise AssertionError("query limit")
 
-        # Count queries
-        q_count = 1
+                # Query flickr
+                photos_to_add = self.flickr_query(page)
+        
+                # If the query reaches the limit of 4000 photos (16*250=4000):
+                if photos_to_add["pages"] > 16:
+                    # Add new params and try again (split bbox or time extent)
+                    self.add_new_params()
+                    break
 
-        # Loop years
-        for year in years_list:
+                # The query is small enough to download -> add photos    
+                self.photos += photos_to_add["photo"]
+                # Stop when photos from every page have been added
+                if page >= photos_to_add["pages"]:
+                    self.logger.info(f"    {photos_to_add['total']} photos added")
+                    break
+                # Move on to next page
+                page += 1
 
-            self.logger.info('\nyear: '+str(year))
-
-            # Whole years
-            if year < 2021:
-                months_list = list(range(1,13))
-            
-            # Cut off current year to limit empty queries
-            else:
-                months_list = list(range(1,6))
-
-            # Loop months
-            for month in months_list:
-                
-                self.logger.info(f'  month: {month}')
-                
-                # Number of days in month being looped
-                n_days = calendar.monthrange(year, month)[1]
-                
-                # Days as a list
-                days_list = list(range(1, n_days+1))
-                
-                # Loop days
-                for day in days_list:
-                    
-                    self.logger.info(f'    day: {day}')
-                    
-                    # Get min and max timestamps (mysql format)
-                    min_taken_date = str(year) + '-' + str(month) + '-' + str(day) + ' 00:00:00'
-                    max_taken_date = str(year) + '-' + str(month) + '-' + str(day) + ' 23:59:59'
-
-                    # Connect to Flickr
-                    flickr = FlickrAPI(self.flickr_api_key, self.flickr_secret, format='parsed-json')
-
-                    page = 1            
-                    # While loop to generate requests
-                    while True:
-                        # Protect api key (limit amount of queries)
-                        if q_count > 3500:
-                            raise AssertionError("Over 3500 queries done! Stopping to protect API key.")
-                        self.logger.info(f'      query: {q_count}')
-
-                        # Wait time to avoid errors
-                        time.sleep(0.1)
-
-                        try:
-                            result = flickr.photos.search(
-                                per_page = 400,             # Number of data per page
-                                has_geo = 1,                # Get photos with geolocation
-                                min_taken_date = min_taken_date, 
-                                max_taken_date = max_taken_date,
-                                bbox = self.bbox_string,          # Specify geographical extent
-                                media = 'photos',           # Photos without video
-                                sort = 'date-taken-desc',   # Photos from latest
-                                privacy_filter =1,          # Public photos
-                                safe_search = 1,            # photos without violence
-                                extras = 'geo,url_n, date_taken, views, license',
-                                page = page
-                            )
-                        except FlickrError as e:
-                            self.logger.warn(f"      Flickr API returned an error: {e}. Trying next request.")
-                            q_count += 1
-                            break
-
-                        q_count += 1
-
-                        # Add result
-                        photos_to_add = result['photos']
-                        self.logger.info(f"        total_photos: {photos_to_add['total']}")
-                        self.logger.info(f'        current_pages: {page}')
-                        photos += photos_to_add['photo']
-
-                        # Check for query size limit (10 x 400 = 4000)
-                        if page > 10 :
-                            self.logger.error("      Query has exceeded the limit of 4000 photos")
-                            break
-                        # Break when done
-                        elif page >= photos_to_add['pages']:
-                            break
-                        page += 1
-
+        # Save the photo locations
         flickr_points = {}
-        self.logger.info(f"Found {len(photos)} flickr photos, importing...")
-        for point in photos:
+        self.logger.info(f"Found {len(self.photos)} flickr photos, importing...")
+        for point in self.photos:
             pid = point.pop("id")
-            geom = from_shape(Point(float(point.pop("longitude")), float(point.pop("latitude"))), srid=4326)
-            # use dict, since the json may contain the same image twice!
+            geom = from_shape(
+                Point(float(point.pop("longitude")),
+                float(point.pop("latitude"))),
+                srid=4326
+            )
+            # Use dict, since the json may contain the same image twice!
             if pid in flickr_points:
                 self.logger.info(f"Image {pid} found twice, overwriting")
             flickr_points[pid] = FlickrPoint(point_id=pid, properties=point, geom=geom)
-        print(f"Saving {len(flickr_points)} flickr points...")
+        self.logger.info(f"Saving {len(flickr_points)} flickr points...")
         self.session.bulk_save_objects(flickr_points.values())
         self.session.commit()
 
+    
+    def flickr_query(self, page):
+        """A method for querying flickr API
+        
+        Queries are based on the current params of the main loop. In case of
+        an error, a query is retried a maximum of 5 times. Returns only the
+        photos from the result.
+        """
 
-if __name__ == '__main__':
+        # TODO: What to do in the hypothetical case that a query fails all
+        # attempts, i.e. a bbox would be left empty?
+        for attempt in range(5):
+            try:
+                # Query flickr
+                result = self.flickr.photos.search(
+                    per_page=250,               # Geo-query limit is 250
+                    has_geo=1,                  # Photos with geolocation
+                    min_taken_date=f"{self.min_date_str}",
+                    max_taken_date=f"{self.max_date_str}",
+                    bbox=(
+                        f"{self.bbox[0]}, {self.bbox[1]}, "
+                        f"{self.bbox[2]}, {self.bbox[3]}"
+                    ),
+                    media="photos",             # Photos only
+                    sort="date-taken-desc",     # Photos from latest
+                    privacy_filter=1,           # Public photos
+                    safe_search=1,              # photos without violence
+                    extras="geo, url_n, date_taken, views, license",
+                    page=page,
+                )
+            except FlickrError as e:
+                self.logger.warn(f"Flickr API returned an error: {e}. Trying again.")
+                self.q_count += 1
+                continue
+            break
+
+        self.q_count += 1
+        self.logger.info("    queries:", self.q_count)
+        return result["photos"]
+ 
+
+    def add_new_params(self):
+        """A method for adding new parameters if a query returns too much data
+
+        New parameters are added either by dividing the bounding box or the
+        time extent. Time extent is divided only if the bounding box is too
+        small for dividing.
+        """
+
+        self.logger.info("    Too much data, trying with new prameters")
+        # Divide bbox if possible
+        if (
+            (self.bbox[2] - self.bbox[0] > 1e-4) and
+            (self.bbox[3] - self.bbox[1] > 1e-4)
+        ):
+            self.logger.info("      Bbox big enough to divide, dividing bbox")
+            # Divide bbox to 4, add new bboxes to params_list
+            middle_lon = (self.bbox[0] + self.bbox[2]) / 2
+            middle_lat = (self.bbox[1] + self.bbox[3]) / 2
+            self.params_list.append((
+                (self.bbox[0],self.bbox[1],middle_lon,middle_lat),
+                self.min_date, self.max_date
+            ))
+            self.params_list.append((
+                (middle_lon,self.bbox[1],self.bbox[2],middle_lat),
+                self.min_date, self.max_date
+            ))
+            self.params_list.append((
+                (self.bbox[0],middle_lat,middle_lon,self.bbox[3]),
+                self.min_date, self.max_date
+            ))
+            self.params_list.append((
+                (middle_lon,middle_lat,self.bbox[2],self.bbox[3]),
+                self.min_date, self.max_date
+            ))
+            
+        # If bbox too small, divide time extent instead
+        else:
+            self.logger.info("      Bbox too small to divide, dividing time extent")
+            # Divide time extent to 2, add new dates to params_list
+            mid_date = self.min_date + (self.max_date - self.min_date) / 2
+            self.params_list.append((self.bbox, self.min_date, mid_date))
+            self.params_list.append((self.bbox, mid_date, self.max_date))
+        
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Import Flickr data for given boundingbox")
     parser.add_argument("-bbox", default=None, help="Boundingbox to import")
     args = vars(parser.parse_args())
