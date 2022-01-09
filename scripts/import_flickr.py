@@ -16,7 +16,6 @@ sys.path.insert(0, "..")
 from models import FlickrPoint
 
 
-
 class FlickrImporter:
     def __init__(self, slug: str, bbox: Tuple, logger: Logger):
         """Sets the initial parameters, connects to flickr and database"""
@@ -31,12 +30,11 @@ class FlickrImporter:
         end_date = datetime.datetime.today()
         start_date = end_date - datetime.timedelta(days=3*365)
         # List for api request parameter tuples
-        self.params_list = [(total_bbox, start_date, end_date)]
+        self.start_params = [(total_bbox, start_date, end_date)]
         
-        # list for photos
+        # List for photos
         self.photos = []
-        # Keep track of used parameter combos and amount of queries
-        self.used_params = []
+        # Keep track of queries
         self.q_count = 0
 
         # Connect to flickr
@@ -59,64 +57,11 @@ class FlickrImporter:
 
 
     def run(self):
-        """The main download loop
+        """Downloads photo locations and saves them to database"""
+
+        # Download photos
+        self.loop(self.start_params)
         
-        Loops through the API request parameters in self.params_list, sends
-        API queries and and fills self.params_list with new parameters as
-        needed.
-        """
-
-        for params in self.params_list:
-            # bbox and dates as variabes
-            self.bbox = params[0]
-            self.min_date = params[1]
-            self.max_date = params[2]
-            self.min_date_str = (
-                f"{self.min_date.year}-"
-                f"{self.min_date.month:02}-"
-                f"{self.min_date.day:02} 00:00:00"
-            )
-            self.max_date_str = (
-                f"{self.max_date.year}-"
-                f"{self.max_date.month:02}-"
-                f"{self.max_date.day:02} 00:00:00"
-            )
-            # Print info
-            self.logger.info(f"\nbbox: {self.bbox}")
-            self.logger.info(f"  From: {self.min_date_str}")
-            self.logger.info(f"  To:   {self.max_date_str}")
-    
-            # A failsafe
-            if params in self.used_params:
-                raise AssertionError("Params already used, stuck in a loop -> Breaking")
-            self.used_params.append(params)
-    
-            # Start reading photos from page 1
-            page = 1
-            # Get photos
-            while True:
-                # Flickr's query limit
-                if self.q_count > 3600:
-                    raise AssertionError("query limit")
-
-                # Query flickr
-                photos_to_add = self.flickr_query(page)
-        
-                # If the query reaches the limit of 4000 photos (16*250=4000):
-                if photos_to_add["pages"] > 16:
-                    # Add new params and try again (split bbox or time extent)
-                    self.add_new_params()
-                    break
-
-                # The query is small enough to download -> add photos    
-                self.photos += photos_to_add["photo"]
-                # Stop when photos from every page have been added
-                if page >= photos_to_add["pages"]:
-                    self.logger.info(f"    {photos_to_add['total']} photos added")
-                    break
-                # Move on to next page
-                page += 1
-
         # Save the photo locations
         flickr_points = {}
         self.logger.info(f"Found {len(self.photos)} flickr photos, importing...")
@@ -135,7 +80,73 @@ class FlickrImporter:
         self.session.bulk_save_objects(flickr_points.values())
         self.session.commit()
 
-    
+
+    def loop(self, params_list:list):
+        """The main download loop
+        
+        Loops through the API request parameters in params_list, sends
+        API queries and and creates a new parameter list as needed
+        
+        If new parameters are created, they are looped as a separate
+        list after looping the current params_list is finished 
+        """
+        
+        # A list for storing new params
+        new_params = []
+
+        for params in params_list:
+            # bbox and dates as variabes
+            self.bbox = params[0]
+            self.min_date = params[1]
+            self.max_date = params[2]
+            self.min_date_str = (
+                f"{self.min_date.year}-"
+                f"{self.min_date.month:02}-"
+                f"{self.min_date.day:02} 00:00:00"
+            )
+            self.max_date_str = (
+                f"{self.max_date.year}-"
+                f"{self.max_date.month:02}-"
+                f"{self.max_date.day:02} 00:00:00"
+            )
+            # Print info
+            self.logger.info(f"\nbbox: {self.bbox}")
+            self.logger.info(f"  From: {self.min_date_str}")
+            self.logger.info(f"  To:   {self.max_date_str}")
+
+            # Start reading photos from page 1
+            page = 1
+            # Get photos
+            while True:
+                # Flickr's query limit
+                if self.q_count > 3600:
+                    raise AssertionError("query limit")
+
+                # Query flickr
+                photos_to_add = self.flickr_query(page)
+
+                # If the query reaches the limit of 4000 photos (16*250=4000):
+                if photos_to_add["pages"] > 16:
+                    # Add new params and move to next params
+                    self.add_new_params(new_params)
+                    break
+
+                # The query is small enough to download -> add photos    
+                self.photos += photos_to_add["photo"]
+                # Stop when photos from every page have been added
+                if page >= photos_to_add["pages"]:
+                    self.logger.info(f"    {photos_to_add['total']} photos added")
+                    break
+                # Move on to next page
+                page += 1
+        
+        # See if any new params had to be created
+        if len(new_params) > 0:
+            # Loop with the new params
+            self.logger.info("\n\nSwitching to a new parameter list")
+            self.loop(new_params)
+
+
     def flickr_query(self, page):
         """A method for querying flickr API
         
@@ -174,9 +185,9 @@ class FlickrImporter:
         self.q_count += 1
         self.logger.info("    queries:", self.q_count)
         return result["photos"]
- 
 
-    def add_new_params(self):
+
+    def add_new_params(self, new_params:list):
         """A method for adding new parameters if a query returns too much data
 
         New parameters are added either by dividing the bounding box or the
@@ -191,34 +202,34 @@ class FlickrImporter:
             (self.bbox[3] - self.bbox[1] > 1e-4)
         ):
             self.logger.info("      Bbox big enough to divide, dividing bbox")
-            # Divide bbox to 4, add new bboxes to params_list
+            # Divide bbox to 4, add new bboxes to new params
             middle_lon = (self.bbox[0] + self.bbox[2]) / 2
             middle_lat = (self.bbox[1] + self.bbox[3]) / 2
-            self.params_list.append((
+            new_params.append((
                 (self.bbox[0],self.bbox[1],middle_lon,middle_lat),
                 self.min_date, self.max_date
             ))
-            self.params_list.append((
+            new_params.append((
                 (middle_lon,self.bbox[1],self.bbox[2],middle_lat),
                 self.min_date, self.max_date
             ))
-            self.params_list.append((
+            new_params.append((
                 (self.bbox[0],middle_lat,middle_lon,self.bbox[3]),
                 self.min_date, self.max_date
             ))
-            self.params_list.append((
+            new_params.append((
                 (middle_lon,middle_lat,self.bbox[2],self.bbox[3]),
                 self.min_date, self.max_date
             ))
-            
+
         # If bbox too small, divide time extent instead
         else:
             self.logger.info("      Bbox too small to divide, dividing time extent")
             # Divide time extent to 2, add new dates to params_list
             mid_date = self.min_date + (self.max_date - self.min_date) / 2
-            self.params_list.append((self.bbox, self.min_date, mid_date))
-            self.params_list.append((self.bbox, mid_date, self.max_date))
-        
+            new_params.append((self.bbox, self.min_date, mid_date))
+            new_params.append((self.bbox, mid_date, self.max_date))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Import Flickr data for given boundingbox")
