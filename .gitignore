@@ -145,5 +145,4 @@ cache/
 data/
 logs/
 maps/
-pgdata/
 osm2pgsql/

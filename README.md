@@ -56,8 +56,8 @@ If you're *not* running docker, we recommend creating your own conda env, pyenv,
 which contains conda wheels. The last option should make installing all dependencies easier:
 
 ```
-pyenv install miniconda-latest
-pyenv local miniconda-latest
+pyenv install miniconda3-latest
+pyenv local miniconda3-latest
 pip install -r requirements.txt
 ```
 

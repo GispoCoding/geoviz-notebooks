@@ -71,9 +71,11 @@ class OsmImporter(object):
 
     def _initialise_db(self) -> None:
         """Initialises OSM points table and returns a new DB Session."""
-        with self._engine.connect() as con:
-            con.execute("CREATE EXTENSION postgis")
-        self._engine.execute(CreateSchema(self.slug))
+        with self._engine.connect() as conn:
+            conn.execute("CREATE EXTENSION IF NOT EXISTS postgis")
+
+        if not self._engine.dialect.has_schema(self._engine, self.slug):
+            self._engine.execute(CreateSchema(self.slug))
 
         OSMPoint.__table__.drop(self._engine, checkfirst=True)
         OSMPoint.__table__.create(self._engine)

@@ -4,8 +4,6 @@ services:
   geoviz_test_db:
     image: postgis/postgis:latest
     container_name: geoviz_test_db
-    volumes:
-      - ./pgdata:/var/lib/postgresql/data/pgdata
     ports:
       - "5400:5432"
     environment:
