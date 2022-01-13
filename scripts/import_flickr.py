@@ -183,7 +183,7 @@ class FlickrImporter:
             break
 
         self.q_count += 1
-        self.logger.info("    queries:", self.q_count)
+        self.logger.info(f"    queries: {self.q_count}")
         return result["photos"]
 
 
