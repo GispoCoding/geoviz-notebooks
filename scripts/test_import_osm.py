@@ -20,10 +20,10 @@ def db_engine(postgres):
 
 @pytest.fixture
 def helsinki_importer(db_engine):
-    """Setup a OsmImporter for Helsinki using the test database."""
+    """Set up a OsmImporter for Helsinki using the test database."""
     slug_string = "Helsinki"
     args = {
-        "city": slug_string,
+        "slug": slug_string,
         "bbox": "24.82345, 60.14084, 25.06404, 60.29496",
     }
 
@@ -54,5 +54,16 @@ def test_data_loading(db_engine, helsinki_importer):
     helsinki_importer.run()
 
     with db_engine.connect() as con:
-        cur = con.execute("""select tags->'name', tags->'addr:city' from "Helsinki".osmpoints o where node_id = 25038585""")
+        cur = con.execute("""
+        SELECT tags->'name', tags->'addr:city'
+        FROM "Helsinki".osmpoints o
+        WHERE node_id = 25038585""")
         assert cur.fetchall() == [("Polyteekkarimuseo", "Espoo")]
+
+        # Check empty tags are filtered out
+        cur = con.execute("""
+        SELECT tags ? 'name', tags ? 'bar', tags ? 'lit', tags ? 'beer'
+        FROM "Helsinki".osmpoints o 
+        WHERE node_id = 25038585""")
+
+        assert cur.fetchall() == [(True, False, False, False)]

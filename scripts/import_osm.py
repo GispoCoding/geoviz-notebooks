@@ -1,5 +1,7 @@
 import argparse
+import logging
 import sys
+
 import osmnx as ox
 from ipygis import get_connection_url
 from sqlalchemy import create_engine
@@ -12,6 +14,8 @@ from typing import Dict
 sys.path.insert(0, "..")
 from models import OSMPoint
 from osm_tags import tags_to_filter
+
+LOGGER = logging.getLogger()
 
 
 class OsmImporter(object):
@@ -47,8 +51,10 @@ class OsmImporter(object):
 
     def run(self):
         self._initialise_db()
-        print("Fetching OSM data from overpass API...")
+        LOGGER.info("Fetching OSM data from overpass API...")
         pois = self._get_amenities()
+        LOGGER.info(f"Found {pois.shape[0]} POIs, processing...")
+
         pois = pois.to_crs(epsg=3035)
         pois.geometry = pois.centroid
         pois = pois.to_crs(epsg=4326)
@@ -63,8 +69,10 @@ class OsmImporter(object):
         pois = pois.set_index("node_id")
         pois["geom"] = pois["geom"].apply(lambda geom: WKTElement(geom.wkt, srid=4326))
 
-        pois["tags"] = pois[tag_columns].apply(lambda x: x.to_json(), axis=1)
+        pois["tags"] = [row.dropna().to_json()
+                        for idx, row in pois[tag_columns].iterrows()]
         pois = pois.drop(tag_columns, axis=1)
+        LOGGER.info(f"Importing {pois.shape[0]} POIs to database in schema {self.slug}")
 
         pois.to_sql(name=OSMPoint.__tablename__, con=self._engine, schema=self.slug, if_exists="append",
                     dtype={"geom": Geometry(geometry_type="POINT", srid=4326)})
