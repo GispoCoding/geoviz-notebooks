@@ -86,7 +86,7 @@ columns = [
     for dataset in datasets_to_export
 ]
 
-result_map = generate_map(results, 500, config=config, column=columns, weights=weights)
+result_map = generate_map(results, 500, config=config, column=columns, weights=weights, clusters=0.005)
 map_path = os.path.join(os.path.dirname(__loader__.path), MAPS_PATH)
 if not os.path.exists(map_path):
     os.mkdir(map_path)
