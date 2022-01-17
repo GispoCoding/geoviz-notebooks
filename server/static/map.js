@@ -26,17 +26,18 @@ if (document.getElementById('bbox_map')) {
     }
 
     // event handlers
-    bboxMap.on("click", e => {
-        // look for closest bbox
-        url = osmnamesUrl + 'r/boundary/' + e.latlng.lng + '/' + e.latlng.lat + '.js';
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                city = data.results[0];
-                setBbox(city.boundingbox);
-                document.getElementById('bbox-city').value = city.name;
-            });
-    });
+    // Disable finding bbox by clicking. Will interfere with actually editing the bbox.
+    // bboxMap.on("click", e => {
+    //     // look for closest bbox
+    //     url = osmnamesUrl + 'r/boundary/' + e.latlng.lng + '/' + e.latlng.lat + '.js';
+    //     fetch(url)
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             city = data.results[0];
+    //             setBbox(city.boundingbox);
+    //             document.getElementById('bbox-city').value = city.name;
+    //         });
+    // });
     bboxMap.on("editable:editing", e => {
         document.getElementById('bbox-bbox').value = bboxFeature.getBounds().toBBoxString();
     });
