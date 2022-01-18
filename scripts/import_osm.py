@@ -15,7 +15,7 @@ sys.path.insert(0, "..")
 from models import OSMPoint
 from osm_tags import tags_to_filter
 
-LOGGER = logging.getLogger()
+logger = logging.getLogger("import")
 
 
 class OsmImporter(object):
@@ -51,9 +51,9 @@ class OsmImporter(object):
 
     def run(self):
         self._initialise_db()
-        LOGGER.info("Fetching OSM data from overpass API...")
+        logger.info("Fetching OSM data from Overpass API...")
         pois = self._get_amenities()
-        LOGGER.info(f"Found {pois.shape[0]} POIs, processing...")
+        logger.info(f"Found {pois.shape[0]} POIs, processing...")
 
         pois = pois.to_crs(epsg=3035)
         pois.geometry = pois.centroid
@@ -72,7 +72,7 @@ class OsmImporter(object):
         pois["tags"] = [row.dropna().to_json()
                         for idx, row in pois[tag_columns].iterrows()]
         pois = pois.drop(tag_columns, axis=1)
-        LOGGER.info(f"Importing {pois.shape[0]} POIs to database in schema {self.slug}")
+        logger.info(f"Importing {pois.shape[0]} POIs to database in schema {self.slug}")
 
         pois.to_sql(name=OSMPoint.__tablename__, con=self._engine, schema=self.slug, if_exists="append",
                     dtype={"geom": Geometry(geometry_type="POINT", srid=4326)})
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         description="Import OSM data for given bounding box."
     )
     parser.add_argument("--slug", help="City to import")
-    parser.add_argument("--bbox", default=None, help="Boundingbox to import")
+    parser.add_argument("--bbox", default=None, help="Bounding box of imported area")
     input_args = vars(parser.parse_args())
 
     OsmImporter(input_args).run()

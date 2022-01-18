@@ -21,15 +21,15 @@ def db_engine(postgres):
 @pytest.fixture
 def helsinki_importer(db_engine):
     """Set up a OsmImporter for Helsinki using the test database."""
-    slug_string = "Helsinki"
+    slug = "helsinki-city"
     args = {
-        "slug": slug_string,
+        "slug": slug,
         "bbox": "24.82345, 60.14084, 25.06404, 60.29496",
     }
 
     helsinki_importer = OsmImporter(args)
     helsinki_importer._engine = db_engine.execution_options(
-        schema_translate_map={"schema": slug_string}
+        schema_translate_map={"schema": slug}
     )
 
     yield helsinki_importer
@@ -52,18 +52,19 @@ def test_db_init(db_engine, helsinki_importer):
 
 def test_data_loading(db_engine, helsinki_importer):
     helsinki_importer.run()
+    slug = helsinki_importer.slug
 
-    with db_engine.connect() as con:
-        cur = con.execute("""
+    with db_engine.connect() as conn:
+        cur = conn.execute(f"""
         SELECT tags->'name', tags->'addr:city'
-        FROM "Helsinki".osmpoints o
+        FROM "{slug}".osmpoints o
         WHERE node_id = 25038585""")
         assert cur.fetchall() == [("Polyteekkarimuseo", "Espoo")]
 
         # Check empty tags are filtered out
-        cur = con.execute("""
+        cur = conn.execute(f"""
         SELECT tags ? 'name', tags ? 'bar', tags ? 'lit', tags ? 'beer'
-        FROM "Helsinki".osmpoints o 
+        FROM "{slug}".osmpoints o 
         WHERE node_id = 25038585""")
 
         assert cur.fetchall() == [(True, False, False, False)]

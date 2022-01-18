@@ -1,24 +1,26 @@
 import argparse
+import logging
 import sys
 import osmnx as ox
 import pandana
 from ipygis import get_connection_url
-from logging import Logger
 from shapely.geometry import Point
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from typing import Optional, Tuple
+from typing import Optional, List
 from geoalchemy2.shape import from_shape
+from slugify import slugify
 
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
 from models import OSMAccessNode
 from osm_tags import tags_to_filter
 
+logger = logging.getLogger("import")
+
 
 class AccessibilityImporter(object):
-    def __init__(self, slug: str, bbox: Tuple, logger: Logger, city: Optional[str] = None):
-        self.logger = logger
+    def __init__(self, slug: str, bbox: List[float], city: Optional[str] = None):
         if not slug:
             raise AssertionError("You must specify the city name.")
         (self.minx, self.miny, self.maxx, self.maxy) = bbox
@@ -34,7 +36,7 @@ class AccessibilityImporter(object):
         OSMAccessNode.__table__.create(schema_engine)
 
     def run(self):
-        self.logger.info("Fetching graph from overpass API...")
+        logger.info("Fetching graph from Overpass API...")
         # Get graph by geocoding
         try:
             graph = ox.graph_from_place(self.city, network_type="walk")
@@ -46,7 +48,7 @@ class AccessibilityImporter(object):
             )
             ignore_geocoding = True
 
-        self.logger.info("Projecting graph...")
+        logger.info("Projecting graph...")
         # Project graph for accurate simplification (and more accurate poi centroids later on)
         graph = ox.projection.project_graph(graph, to_crs=3035)
 
@@ -75,7 +77,7 @@ class AccessibilityImporter(object):
 
         graph = ox.add_edge_travel_times(graph)
 
-        self.logger.info("Extracting geodataframes...")
+        logger.info("Extracting geodataframes...")
         # Extract node/edge GeoDataFrames, retaining only necessary columns (for pandana)
         nodes = ox.graph_to_gdfs(graph, edges=False)[["x", "y"]]
         edges = ox.graph_to_gdfs(graph, nodes=False).reset_index()[
@@ -83,7 +85,7 @@ class AccessibilityImporter(object):
         ]
 
         # Select pois based on osm tags
-        self.logger.info("Constructing amenities POIs...")
+        logger.info("Constructing amenities POIs...")
         # Get amentities from place/bbox
         if ignore_geocoding is True:
             amenities = ox.geometries.geometries_from_bbox(
@@ -119,7 +121,7 @@ class AccessibilityImporter(object):
             y_col=centroids.y,
         )
 
-        self.logger.info("Calculating distances to amenities...")
+        logger.info("Calculating distances to amenities...")
         # calculate travel time to 10 nearest amenities from each node in network
         distances = network.nearest_pois(distance=maxdist, category="pois", num_pois=10)
 
@@ -132,7 +134,7 @@ class AccessibilityImporter(object):
         walk_access_wgs = nodes_wgs.join(distances, on="osmid", how="left")
         walk_access_dict = walk_access_wgs.to_dict(orient="index")
         nodes_to_save = {}
-        self.logger.info(f"Found {len(walk_access_dict)} accessibility nodes, importing...")
+        logger.info(f"Found {len(walk_access_dict)} accessibility nodes, importing...")
         for key, value in walk_access_dict.items():
             node_id = key
             geom = from_shape(
@@ -140,11 +142,11 @@ class AccessibilityImporter(object):
             )
             # use dict, since the json may contain the same stop twice!
             if node_id in nodes_to_save:
-                self.logger.info(f"Node {node_id} found twice, overwriting")
+                logger.info(f"Node {node_id} found twice, overwriting")
             nodes_to_save[node_id] = OSMAccessNode(
                 node_id=node_id, accessibilities=value, geom=geom
             )
-        self.logger.info(f"Saving {len(nodes_to_save)} accessibility nodes...")
+        logger.info(f"Saving {len(nodes_to_save)} accessibility nodes...")
         self.session.bulk_save_objects(nodes_to_save.values())
         self.session.commit()
 
@@ -153,28 +155,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Do OSM accessibility analysis for given boundingbox"
     )
-    parser.add_argument("-bbox", default=None, help="Boundingbox to import")
+    parser.add_argument("-bbox", default=None, help="Bounding box of area to import")
     parser.add_argument("-city", default="HEL", help="City to import")
     args = vars(parser.parse_args())
-    # BBOX (minx, miny, maxx, maxy) takes precedence over city
-    bbox = args["bbox"]
-    if bbox:
-        minx, miny, maxx, maxy = map(float, bbox.split(", "))
-        importer = AccessibilityImporter(minx, miny, maxx, maxy)
-    else:
-        city = args["city"]
-        # support old city parameter too, if we want to let osmnx do geocoding
-        if city == "COP":
-            cityname = "Copenhagen, Denmark"
-            minx, miny, maxx, maxy = 12.42000, 55.61000, 12.65000, 55.78000
-        elif city == "HEL":
-            cityname = "Helsinki, Finland"
-            minx, miny, maxx, maxy = 24.82345, 60.14084, 25.06404, 60.29496
-        elif city == "WAR":
-            cityname = "Warsaw, Poland"
-            minx, miny, maxx, maxy = 20.79057, 52.09901, 21.31300, 52.38502
-        else:
-            raise AssertionError("You must specify a bounding box or city.")
-        importer = AccessibilityImporter(minx, miny, maxx, maxy, city=cityname)
+    arg_slug = slugify(args["city"])
+    arg_bbox = args["bbox"]
+    arg_bbox = list(map(float, arg_bbox.split(", ")))
+    importer = AccessibilityImporter(arg_slug, arg_bbox)
 
     importer.run()

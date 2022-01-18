@@ -1,19 +1,19 @@
 import argparse
+import logging
 import os
 import sys
-import re
 import requests
 import shapefile
 import shutil
 import zipfile
 from ipygis import get_connection_url
-from logging import Logger
 from osgeo import gdal
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Polygon
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from typing import Tuple
+from typing import List
 from geoalchemy2.shape import from_shape
+from slugify import slugify
 
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
@@ -21,11 +21,12 @@ from models import OoklaPoint
 
 DATA_PATH = "data"
 
+logger = logging.getLogger("import")
+
 
 class OoklaImporter(object):
 
-    def __init__(self, slug: str, city: str, bbox: Tuple, logger: Logger):
-        self.logger = logger
+    def __init__(self, slug: str, city: str, bbox: List[float]):
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         # BBOX (minx, miny, maxx, maxy)
@@ -54,20 +55,20 @@ class OoklaImporter(object):
 
     def run(self):
         if os.path.isfile(self.download_file):
-            self.logger.info("Found saved Ookla data...")
+            logger.info("Found saved Ookla data...")
         else:
-            self.logger.info("Downloading Ookla data...")
-            self.logger.info(f"{self.download_url}{self.download_name}.zip")
+            logger.info("Downloading Ookla data...")
+            logger.info(f"{self.download_url}{self.download_name}.zip")
             with requests.get(f"{self.download_url}{self.download_name}.zip", stream=True) as request:
                 with open(self.download_file, 'wb') as file:
                     shutil.copyfileobj(request.raw, file)
         if not os.path.isdir(self.unzipped_path):
-            self.logger.info("Extracting zip...")
+            logger.info("Extracting zip...")
             with zipfile.ZipFile(self.download_file, 'r') as zip_ref:
                 zip_ref.extractall(self.unzipped_path)
 
         if not os.path.isfile(self.city_file):
-            self.logger.info(f"Extracting {self.city} from Ookla data...")
+            logger.info(f"Extracting {self.city} from Ookla data...")
             gdal.UseExceptions()
             # this does the same as ogr2ogr
             # https://gdal.org/python/osgeo.gdal-module.html#VectorTranslateOptions
@@ -76,13 +77,13 @@ class OoklaImporter(object):
                 f"{self.unzipped_path}/gps_fixed_tiles.shp",
                 spatFilter=self.bbox
             )
-            self.logger.info(city_data)
+            logger.info(city_data)
             # we must dereference the data for the file actually to be written
             # https://gdal.org/api/python_gotchas.html#saving-and-closing-datasets-datasources
             del city_data
         else:
-            self.logger.info(f"Found shapefile for {self.city}...")
-        self.logger.info(f"Reading Ookla data for {self.city}...")
+            logger.info(f"Found shapefile for {self.city}...")
+        logger.info(f"Reading Ookla data for {self.city}...")
         with shapefile.Reader(self.city_file) as shapes:
             points_to_save = {}
             for shaperecord in shapes.shapeRecords():
@@ -103,18 +104,21 @@ class OoklaImporter(object):
                 points_to_save[quadkey_id] = OoklaPoint(
                     quadkey_id=quadkey_id, properties=properties, geom=geom
                 )
-                self.logger.info(geom)
-                self.logger.info(properties)
-        self.logger.info(f"Saving {len(points_to_save)} Ookla points...")
+                logger.info(geom)
+                logger.info(properties)
+        logger.info(f"Saving {len(points_to_save)} Ookla points...")
         self.session.bulk_save_objects(points_to_save.values())
         self.session.commit()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Import Ookla speedtest data for given city")
     parser.add_argument("--city", default="Helsinki", help="City to import")
     parser.add_argument("--bbox", default=(24.82345, 60.14084, 25.06404, 60.29496))
     args = vars(parser.parse_args())
-    city = args.get("city", None)
-    bbox = args.get("bbox", None)
-    importer = OoklaImporter(city=city, bbox=bbox)
+    arg_city = args.get("city", None)
+    arg_slug = slugify(arg_city)
+    arg_bbox = args.get("bbox", None)
+    arg_bbox = list(map(float, arg_bbox.split(", ")))
+    importer = OoklaImporter(slug=arg_slug, city=arg_city, bbox=arg_bbox)
     importer.run()
