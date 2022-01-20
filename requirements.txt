@@ -19,7 +19,7 @@ sqlalchemy>1.4
 sqlalchemy-utils
 
 # Our GIS tools
-git+https://github.com/GispoCoding/ipygis.git
+git+https://github.com/GispoCoding/ipygis.git@0.2.0
 
 # GISPO style
 git+https://github.com/GispoCoding/jupyter-themes.git
