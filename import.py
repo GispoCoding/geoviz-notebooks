@@ -64,33 +64,30 @@ delete = args.get("delete", False)
 logger = create_logger(slug)
 logger.info(f"--- Importing datasets {datasets} for {city} ---")
 
-if osmnames_url:
-    # Use our own geocoding service. It provides bbox and country for city.
-    logger.info(f"Geocoding {city} using OSMNames service at {osmnames_url}...")
-    city_data = requests.get(
-        f"{osmnames_url}/q/{city}.js"
-    ).json()["results"][0]
-    if bbox:
-        bbox = bbox.split()
-    else:
-        bbox = city_data["boundingbox"]
+# only do geocoding if the user has not provided bounding box
+if bbox:
+    bbox = bbox.split()
 else:
-    # Fall back to Nominatim. Their API doesn't always respond tho.
-    # Get bbox, centroid and country for the city
-    logger.info(f"Geocoding {city} using Nominatim...")
-    city_params = {"q": args["city"], "limit": 1, "format": "json"}
-    city_data = requests.get(
-        "https://nominatim.openstreetmap.org/search", params=city_params
-    ).json()[0]
-    if bbox:
-        bbox = bbox.split()
+    if osmnames_url:
+        # Use our own geocoding service. It provides bbox and country for city.
+        logger.info(f"Geocoding {city} using OSMNames service at {osmnames_url}...")
+        city_data = requests.get(
+            f"{osmnames_url}/q/{city}.js"
+        ).json()["results"][0]
+        bbox = city_data["boundingbox"]
     else:
+        # Fall back to Nominatim. Their API doesn't always respond tho.
+        # Get bbox, centroid and country for the city
+        logger.info(f"Geocoding {city} using Nominatim...")
+        city_params = {"q": args["city"], "limit": 1, "format": "json"}
+        city_data = requests.get(
+            "https://nominatim.openstreetmap.org/search", params=city_params
+        ).json()[0]
         # nominatim returns miny, maxy, minx, maxx
         # we want minx, miny, maxx, maxy
         bbox = [city_data["boundingbox"][i] for i in [2, 0, 3, 1]]
-    centroid = [city_data["lon"], city_data["lat"]]
-    logger.info(f"{city} centroid: {centroid}")
-
+        centroid = [city_data["lon"], city_data["lat"]]
+        logger.info(f"{city} centroid: {centroid}")
 # bbox must always be float
 bbox = [float(coord) for coord in bbox]
 
@@ -105,7 +102,7 @@ Analysis.__table__.create(engine, checkfirst=True)
 analysis = Analysis(
     slug=slug,
     name=city,
-    bbox=from_shape(box(*[float(coord) for coord in bbox])),
+    bbox=from_shape(box(*bbox)),
     # mark datasets like {selected: ['osm', 'flickr'], imported: ['osm']}
     datasets={"selected": datasets, "imported": []},
     # mark params like {gtfs: {url: http://example.com}}
@@ -120,7 +117,7 @@ except IntegrityError:
     # there is an analysis for the city already. merge the datasets
     logger.info(f"Analysis for {city} found already. Overwriting selected datasets.")
     analysis = session.query(Analysis).filter(Analysis.slug == slug).first()
-    analysis.bbox = from_shape(box(*[float(coord) for coord in bbox]))
+    analysis.bbox = from_shape(box(*bbox))
     analysis.viewed = False
     analysis.finish_time = None
     if gtfs_url:
