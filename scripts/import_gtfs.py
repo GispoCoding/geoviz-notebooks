@@ -77,7 +77,8 @@ class GTFSImporter(object):
         else:
             self.logger.info("Downloading gtfs zip...")
             response = requests.get(self.url, allow_redirects=True)
-            open(filename, 'wb').write(response.content)
+            with open(filename, 'wb') as file:
+                file.write(response.content)
 
         self.logger.info("Loading gtfs zip...")
         routes, stops, stop_times, trips, shapes = import_gtfs(filename)
