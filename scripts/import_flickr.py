@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import logging
+from logging import Logger
 import os
 import sys
 from flickrapi import FlickrAPI, FlickrError
@@ -17,11 +18,9 @@ from slugify import slugify
 sys.path.insert(0, "..")
 from models import FlickrPoint
 
-logger = logging.getLogger("import")
-
 
 class FlickrImporter:
-    def __init__(self, slug: str, bbox: List[float]):
+    def __init__(self, slug: str, bbox: List[float], logger: Logger):
         """Sets the initial parameters, connects to flickr and database"""
         if not slug:
             raise AssertionError("You must specify the city name.")
@@ -33,6 +32,7 @@ class FlickrImporter:
         start_date = end_date - datetime.timedelta(days=3*365)
         # List for api request parameter tuples
         self.start_params = [(total_bbox, start_date, end_date)]
+        self.logger = logger
 
         # List for photos
         self.photos = []
@@ -65,7 +65,7 @@ class FlickrImporter:
 
         # Save the photo locations
         flickr_points = {}
-        logger.info(f"Found {len(self.photos)} Flickr photos, importing...")
+        self.logger.info(f"Found {len(self.photos)} Flickr photos, importing...")
         for point in self.photos:
             pid = point.pop("id")
             geom = from_shape(
@@ -74,9 +74,9 @@ class FlickrImporter:
             )
             # Use dict, since the json may contain the same image twice!
             if pid in flickr_points:
-                logger.info(f"Image {pid} found twice, overwriting")
+                self.logger.info(f"Image {pid} found twice, overwriting")
             flickr_points[pid] = FlickrPoint(point_id=pid, properties=point, geom=geom)
-        logger.info(f"Saving {len(flickr_points)} flickr points...")
+        self.logger.info(f"Saving {len(flickr_points)} flickr points...")
         self.session.bulk_save_objects(flickr_points.values())
         self.session.commit()
 
@@ -109,9 +109,9 @@ class FlickrImporter:
                 f"{self.max_date.day:02} 00:00:00"
             )
             # Print info
-            logger.info(f"\nbbox: {self.bbox}")
-            logger.info(f"  From: {self.min_date_str}")
-            logger.info(f"  To:   {self.max_date_str}")
+            self.logger.info(f"\nbbox: {self.bbox}")
+            self.logger.info(f"  From: {self.min_date_str}")
+            self.logger.info(f"  To:   {self.max_date_str}")
 
             # Start reading photos from page 1
             page = 1
@@ -134,7 +134,7 @@ class FlickrImporter:
                 self.photos += photos_to_add["photo"]
                 # Stop when photos from every page have been added
                 if page >= photos_to_add["pages"]:
-                    logger.info(f"    {photos_to_add['total']} photos added")
+                    self.logger.info(f"    {photos_to_add['total']} photos added")
                     break
                 # Move on to next page
                 page += 1
@@ -142,7 +142,7 @@ class FlickrImporter:
         # See if any new params had to be created
         if len(new_params) > 0:
             # Loop with the new params
-            logger.info("\n\nSwitching to a new parameter list")
+            self.logger.info("\n\nSwitching to a new parameter list")
             self.loop(new_params)
 
     def flickr_query(self, page):
@@ -175,13 +175,13 @@ class FlickrImporter:
                     page=page,
                 )
             except FlickrError as e:
-                logger.warning(f"Flickr API returned an error: {e}. Trying again.")
+                self.logger.warning(f"Flickr API returned an error: {e}. Trying again.")
                 self.q_count += 1
                 continue
             break
 
         self.q_count += 1
-        logger.info(f"    queries: {self.q_count}")
+        self.logger.info(f"    queries: {self.q_count}")
         return result["photos"]
 
     def add_new_params(self, new_params: list):
@@ -192,13 +192,13 @@ class FlickrImporter:
         small for dividing.
         """
 
-        logger.info("    Too much data, trying with new parameters")
+        self.logger.info("    Too much data, trying with new parameters")
         # Divide bbox if possible
         if (
             (self.bbox[2] - self.bbox[0] > 1e-4) and
             (self.bbox[3] - self.bbox[1] > 1e-4)
         ):
-            logger.info("      Bbox big enough to divide, dividing bbox")
+            self.logger.info("      Bbox big enough to divide, dividing bbox")
             # Divide bbox to 4, add new bboxes to new params
             middle_lon = (self.bbox[0] + self.bbox[2]) / 2
             middle_lat = (self.bbox[1] + self.bbox[3]) / 2
@@ -221,7 +221,7 @@ class FlickrImporter:
 
         # If bbox too small, divide time extent instead
         else:
-            logger.info("      Bbox too small to divide, dividing time extent")
+            self.logger.info("      Bbox too small to divide, dividing time extent")
             # Divide time extent to 2, add new dates to params_list
             mid_date = self.min_date + (self.max_date - self.min_date) / 2
             new_params.append((self.bbox, self.min_date, mid_date))
@@ -238,5 +238,5 @@ if __name__ == '__main__':
     arg_slug = slugify(arg_city)
     arg_bbox = args["bbox"]
     arg_bbox = list(map(float, arg_bbox.split(", ")))
-    importer = FlickrImporter(slug=arg_slug, bbox=arg_bbox)
+    importer = FlickrImporter(slug=arg_slug, bbox=arg_bbox, logger=logging.getLogger("import"))
     importer.run()

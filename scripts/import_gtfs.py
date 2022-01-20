@@ -1,5 +1,6 @@
 import argparse
 import logging
+from logging import Logger
 import os
 import sys
 import requests
@@ -38,16 +39,15 @@ GTFS_DATASETS = {
 
 DATA_PATH = "data"
 
-logger = logging.getLogger("import")
-
 
 class GTFSImporter(object):
-    def __init__(self, slug: str, city: str, url: str = "", bbox: List[float] = None):
+    def __init__(self, slug: str, city: str, logger: Logger, url: str = "", bbox: List[float] = None):
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         self.city = city
         # optional bbox allows filtering gtfs layer
         self.bbox = bbox
+        self.logger = logger
         if url:
             self.url = url
         else:
@@ -64,7 +64,7 @@ class GTFSImporter(object):
 
     def run(self):
         if not self.url:
-            logger.error(f"GTFS data not found for {self.city}, skipping.")
+            self.logger.error(f"GTFS data not found for {self.city}, skipping.")
             return
         # data should be stored one directory level above importers
         filename = os.path.join(
@@ -73,13 +73,13 @@ class GTFSImporter(object):
             f"{self.city}.gtfs.zip"
         )
         if os.path.isfile(filename):
-            logger.info("Found saved gtfs zip...")
+            self.logger.info("Found saved gtfs zip...")
         else:
-            logger.info("Downloading gtfs zip...")
+            self.logger.info("Downloading gtfs zip...")
             response = requests.get(self.url, allow_redirects=True)
             open(filename, 'wb').write(response.content)
 
-        logger.info("Loading gtfs zip...")
+        self.logger.info("Loading gtfs zip...")
         routes, stops, stop_times, trips, shapes = import_gtfs(filename)
         # TODO: delete file after reading, we don't want to keep caching them all?
         # This is the only large dataset we download separately. or is gtfs data valuable?
@@ -88,14 +88,14 @@ class GTFSImporter(object):
         # luckily, we have nifty bbox filtering available for geodataframes
         # https://geopandas.org/docs/user_guide/indexing.html
         if self.bbox:
-            logger.info("Filtering gtfs data with bbox...")
-            logger.info(self.bbox)
+            self.logger.info("Filtering gtfs data with bbox...")
+            self.logger.info(self.bbox)
             stops = stops.cx[self.bbox[0]:self.bbox[2], self.bbox[1]:self.bbox[3]]
             stop_times = stop_times.cx[self.bbox[0]:self.bbox[2], self.bbox[1]:self.bbox[3]]
 
         # only calculate average daily frequency for all stops for now
         cutoffs = [0, 24]
-        logger.info("Calculating stop frequencies...")
+        self.logger.info("Calculating stop frequencies...")
         stop_frequencies = stops_freq(stop_times, stops, cutoffs)
         # only consider outbound departures for now
         outbound_frequencies = stop_frequencies.loc[
@@ -106,15 +106,15 @@ class GTFSImporter(object):
         if not outbound_frequencies:
             outbound_frequencies = stop_frequencies.to_dict(orient="records")
         stops_to_save = {}
-        logger.info(f"Found {len(outbound_frequencies)} GTFS stops, importing...")
+        self.logger.info(f"Found {len(outbound_frequencies)} GTFS stops, importing...")
         for stop in outbound_frequencies:
             stop_id = stop.pop("stop_id")
             geom = from_shape(stop.pop("geometry"), srid=4326)
             # use dict, since the json may contain the same stop twice!
             if stop_id in stops_to_save:
-                logger.info(f"Stop {stop_id} found twice, overwriting")
+                self.logger.info(f"Stop {stop_id} found twice, overwriting")
             stops_to_save[stop_id] = GTFSStop(stop_id=stop_id, properties=stop, geom=geom)
-        logger.info(f"Saving {len(stops_to_save)} GTFS stops...")
+        self.logger.info(f"Saving {len(stops_to_save)} GTFS stops...")
         self.session.bulk_save_objects(stops_to_save.values())
         self.session.commit()
 
@@ -127,5 +127,5 @@ if __name__ == "__main__":
     arg_city = args.get("city", None)
     arg_slug = slugify(arg_city)
     arg_url = args.get("url", None)
-    importer = GTFSImporter(slug=arg_slug, city=arg_city, url=arg_url)
+    importer = GTFSImporter(arg_slug, arg_city, logging.getLogger("import"), arg_url)
     importer.run()

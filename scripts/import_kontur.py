@@ -1,5 +1,6 @@
 import argparse
 import logging
+from logging import Logger
 
 import fiona
 import gzip
@@ -22,12 +23,10 @@ from models import KonturPoint
 
 DATA_PATH = "data"
 
-logger = logging.getLogger("import")
-
 
 class KonturImporter(object):
 
-    def __init__(self, slug: str, city: str, bbox: List[float]):
+    def __init__(self, slug: str, city: str, bbox: List[float], logger: Logger):
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         # BBOX (minx, miny, maxx, maxy)
@@ -35,6 +34,7 @@ class KonturImporter(object):
         self.city = city
         self.download_url = "https://adhoc.kontur.io/data/"
         self.download_name = "kontur_population_20200928.gpkg"
+        self.logger = logger
 
         # data should be stored one directory level above importers
         self.unzipped_file = os.path.join(
@@ -58,15 +58,15 @@ class KonturImporter(object):
 
     def run(self):
         if os.path.isfile(self.download_file):
-            logger.info("Found saved Kontur data...")
+            self.logger.info("Found saved Kontur data...")
         else:
-            logger.info("Downloading Kontur data...")
-            logger.info(f"{self.download_url}{self.download_name}.gz")
+            self.logger.info("Downloading Kontur data...")
+            self.logger.info(f"{self.download_url}{self.download_name}.gz")
             with requests.get(f"{self.download_url}{self.download_name}.gz", stream=True) as request:
                 with open(self.download_file, 'wb') as file:
                     shutil.copyfileobj(request.raw, file)
         if not os.path.isfile(self.unzipped_file):
-            logger.info("Extracting gz...")
+            self.logger.info("Extracting gz...")
             with gzip.open(self.download_file, 'rb') as gzip_file:
                 with open(self.unzipped_file, 'wb') as out_file:
                     shutil.copyfileobj(gzip_file, out_file)
@@ -74,7 +74,7 @@ class KonturImporter(object):
         if not os.path.isfile(self.city_file):
             if not os.path.isdir(f"{self.unzipped_file}_extracts"):
                 os.mkdir(f"{self.unzipped_file}_extracts")
-            logger.info(f"Extracting {self.city} from Kontur data...")
+            self.logger.info(f"Extracting {self.city} from Kontur data...")
             gdal.UseExceptions()
             # this does the same as ogr2ogr
             # https://gdal.org/python/osgeo.gdal-module.html#VectorTranslateOptions
@@ -89,8 +89,8 @@ class KonturImporter(object):
             # https://gdal.org/api/python_gotchas.html#saving-and-closing-datasets-datasources
             del city_data
         else:
-            logger.info(f"Found geopackage for {self.city}...")
-        logger.info(f"Reading Kontur data for {self.city}...")
+            self.logger.info(f"Found geopackage for {self.city}...")
+        self.logger.info(f"Reading Kontur data for {self.city}...")
         points_to_save = {}
         for layer_name in fiona.listlayers(self.city_file):
             with fiona.open(self.city_file, layer=layer_name) as source:
@@ -107,7 +107,7 @@ class KonturImporter(object):
                     points_to_save[hex_id] = KonturPoint(
                         hex_id=hex_id, properties=properties, geom=geom
                     )
-        logger.info(f"Saving {len(points_to_save)} Kontur points...")
+        self.logger.info(f"Saving {len(points_to_save)} Kontur points...")
         self.session.bulk_save_objects(points_to_save.values())
         self.session.commit()
 
@@ -121,5 +121,5 @@ if __name__ == "__main__":
     arg_slug = slugify(arg_city)
     arg_bbox = args["bbox"]
     arg_bbox = list(map(float, arg_bbox.split(", ")))
-    importer = KonturImporter(slug=arg_slug, city=arg_city, bbox=arg_bbox)
+    importer = KonturImporter(arg_slug, arg_city, arg_bbox, logging.getLogger("import"))
     importer.run()

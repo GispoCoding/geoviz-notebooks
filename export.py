@@ -35,7 +35,7 @@ datasets_to_export = args["datasets"].split()
 delete = args.get("delete", False)
 
 # log each city separately
-logger = create_logger("export", slug)
+logger = create_logger(slug)
 
 sql_url = get_connection_url(dbname='geoviz')
 engine = create_engine(sql_url)

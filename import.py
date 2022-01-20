@@ -61,7 +61,7 @@ export = args.get("export", False)
 delete = args.get("delete", False)
 
 # log each city separately
-logger = create_logger("import", slug)
+logger = create_logger(slug)
 logger.info(f"--- Importing datasets {datasets} for {city} ---")
 
 if osmnames_url:
@@ -149,14 +149,14 @@ logger.info(f"{city} bounding box {bbox}")
 
 if "osm" in datasets:
     logger.info(f"--- Importing OSM data for {city} ---")
-    osm_importer = OsmImporter({"slug": slug,
-                                "bbox": ", ".join([str(coord) for coord in bbox])})
+    osm_bbox = ", ".join([str(coord) for coord in bbox])
+    osm_importer = OsmImporter({"slug": slug, "bbox": osm_bbox}, logger)
     osm_importer.run()
     mark_imported("osm")
 
 if "flickr" in datasets:
     logger.info(f"--- Importing Flickr data for {city} ---")
-    flick_importer = FlickrImporter(slug=slug, bbox=bbox)
+    flick_importer = FlickrImporter(slug, bbox, logger)
     flick_importer.run()
     mark_imported("flickr")
 
@@ -164,28 +164,28 @@ if "gtfs" in datasets:
     # GTFS importer uses the provided URL or, failing that, default values for some cities
     if gtfs_url:
         logger.info(f"--- Importing GTFS data from {gtfs_url} ---")
-        gtfs_importer = GTFSImporter(slug=slug, url=gtfs_url, city=city, bbox=bbox)
+        gtfs_importer = GTFSImporter(slug, city, logger, gtfs_url, bbox)
     else:
         logger.info(f"--- Importing GTFS data for {city} ---")
-        gtfs_importer = GTFSImporter(slug=slug, city=city, bbox=bbox)
+        gtfs_importer = GTFSImporter(slug, city, logger, bbox=bbox)
     gtfs_importer.run()
     mark_imported("gtfs")
 
 if "access" in datasets:
     logger.info(f"--- Importing OSM walkability & accessibility data for {city} ---")
-    accessibility_importer = AccessibilityImporter(slug=slug, bbox=bbox)
+    accessibility_importer = AccessibilityImporter(slug, bbox, logger)
     accessibility_importer.run()
     mark_imported("access")
 
 if "ookla" in datasets:
     logger.info(f"--- Importing Ookla speedtest data for {city} ---")
-    ookla_importer = OoklaImporter(slug=slug, city=city, bbox=bbox)
+    ookla_importer = OoklaImporter(slug, city, bbox, logger)
     ookla_importer.run()
     mark_imported("ookla")
 
 if "kontur" in datasets:
     logger.info(f"--- Importing Kontur population data for {city} ---")
-    kontur_importer = KonturImporter(slug=slug, city=city, bbox=bbox)
+    kontur_importer = KonturImporter(slug, city, bbox, logger)
     kontur_importer.run()
     mark_imported("kontur")
 

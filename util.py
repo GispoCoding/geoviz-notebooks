@@ -2,15 +2,17 @@ import logging
 import sys
 from pathlib import Path
 
-LOG_PATH = Path('/app/logs')
+LOG_PATH = Path(__file__).parent.resolve().joinpath("logs")
+if not LOG_PATH.exists():
+    LOG_PATH.mkdir(parents=True, exist_ok=True)
 LOG_LEVEL = logging.INFO
-LOG_FORMAT = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s %(message)s',
-                               '%Y-%m-%d %H:%M:%S')
+LOG_FORMAT = logging.Formatter("%(asctime)s %(name)s %(levelname)-8s %(message)s",
+                               "%Y-%m-%d %H:%M:%S")
 
 
-def create_logger(name: str, slug: str) -> logging.Logger:
+def create_logger(slug: str) -> logging.Logger:
     """Creates and returns a new logger."""
-    logger = logging.getLogger(name)
+    logger = logging.getLogger(slug)
 
     # Return logger if already created
     if logger.handlers:

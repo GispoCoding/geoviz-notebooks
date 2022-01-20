@@ -1,5 +1,6 @@
 import argparse
 import logging
+from logging import Logger
 import sys
 
 import osmnx as ox
@@ -15,17 +16,16 @@ sys.path.insert(0, "..")
 from models import OSMPoint
 from osm_tags import tags_to_filter
 
-logger = logging.getLogger("import")
-
 
 class OsmImporter(object):
     """Import OSM data to PostGIS using Overpass API."""
 
-    def __init__(self, args: Dict):
+    def __init__(self, args: Dict, logger: Logger):
         args = self._parse_args(args)
         self.slug = args["slug"]
         self.bbox = args["bbox"]
         self._engine = self._create_engine()
+        self.logger = logger
 
     @staticmethod
     def _parse_args(args) -> Dict:
@@ -51,9 +51,9 @@ class OsmImporter(object):
 
     def run(self):
         self._initialise_db()
-        logger.info("Fetching OSM data from Overpass API...")
+        self.logger.info("Fetching OSM data from Overpass API...")
         pois = self._get_amenities()
-        logger.info(f"Found {pois.shape[0]} POIs, processing...")
+        self.logger.info(f"Found {pois.shape[0]} POIs, processing...")
 
         pois = pois.to_crs(epsg=3035)
         pois.geometry = pois.centroid
@@ -72,7 +72,7 @@ class OsmImporter(object):
         pois["tags"] = [row.dropna().to_json()
                         for idx, row in pois[tag_columns].iterrows()]
         pois = pois.drop(tag_columns, axis=1)
-        logger.info(f"Importing {pois.shape[0]} POIs to database in schema {self.slug}")
+        self.logger.info(f"Importing {pois.shape[0]} POIs to database in schema {self.slug}")
 
         pois.to_sql(name=OSMPoint.__tablename__, con=self._engine, schema=self.slug, if_exists="append",
                     dtype={"geom": Geometry(geometry_type="POINT", srid=4326)})
@@ -101,4 +101,4 @@ if __name__ == "__main__":
     parser.add_argument("--bbox", default=None, help="Bounding box of imported area")
     input_args = vars(parser.parse_args())
 
-    OsmImporter(input_args).run()
+    OsmImporter(input_args, logging.getLogger("import")).run()

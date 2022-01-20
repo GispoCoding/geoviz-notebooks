@@ -1,5 +1,6 @@
 import argparse
 import logging
+from logging import Logger
 import os
 import sys
 import requests
@@ -21,17 +22,16 @@ from models import OoklaPoint
 
 DATA_PATH = "data"
 
-logger = logging.getLogger("import")
-
 
 class OoklaImporter(object):
 
-    def __init__(self, slug: str, city: str, bbox: List[float]):
+    def __init__(self, slug: str, city: str, bbox: List[float], logger: Logger):
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         # BBOX (minx, miny, maxx, maxy)
         self.bbox = bbox
         self.city = city
+        self.logger = logger
         self.download_url = "https://ookla-open-data.s3.amazonaws.com/shapefiles/performance/type=fixed/year=2021/quarter=1/"
         self.download_name = "2021-01-01_performance_fixed_tiles"
 
@@ -55,20 +55,20 @@ class OoklaImporter(object):
 
     def run(self):
         if os.path.isfile(self.download_file):
-            logger.info("Found saved Ookla data...")
+            self.logger.info("Found saved Ookla data...")
         else:
-            logger.info("Downloading Ookla data...")
-            logger.info(f"{self.download_url}{self.download_name}.zip")
+            self.logger.info("Downloading Ookla data...")
+            self.logger.info(f"{self.download_url}{self.download_name}.zip")
             with requests.get(f"{self.download_url}{self.download_name}.zip", stream=True) as request:
                 with open(self.download_file, 'wb') as file:
                     shutil.copyfileobj(request.raw, file)
         if not os.path.isdir(self.unzipped_path):
-            logger.info("Extracting zip...")
+            self.logger.info("Extracting zip...")
             with zipfile.ZipFile(self.download_file, 'r') as zip_ref:
                 zip_ref.extractall(self.unzipped_path)
 
         if not os.path.isfile(self.city_file):
-            logger.info(f"Extracting {self.city} from Ookla data...")
+            self.logger.info(f"Extracting {self.city} from Ookla data...")
             gdal.UseExceptions()
             # this does the same as ogr2ogr
             # https://gdal.org/python/osgeo.gdal-module.html#VectorTranslateOptions
@@ -77,13 +77,13 @@ class OoklaImporter(object):
                 f"{self.unzipped_path}/gps_fixed_tiles.shp",
                 spatFilter=self.bbox
             )
-            logger.info(city_data)
+            self.logger.info(city_data)
             # we must dereference the data for the file actually to be written
             # https://gdal.org/api/python_gotchas.html#saving-and-closing-datasets-datasources
             del city_data
         else:
-            logger.info(f"Found shapefile for {self.city}...")
-        logger.info(f"Reading Ookla data for {self.city}...")
+            self.logger.info(f"Found shapefile for {self.city}...")
+        self.logger.info(f"Reading Ookla data for {self.city}...")
         with shapefile.Reader(self.city_file) as shapes:
             points_to_save = {}
             for shaperecord in shapes.shapeRecords():
@@ -104,9 +104,9 @@ class OoklaImporter(object):
                 points_to_save[quadkey_id] = OoklaPoint(
                     quadkey_id=quadkey_id, properties=properties, geom=geom
                 )
-                logger.info(geom)
-                logger.info(properties)
-        logger.info(f"Saving {len(points_to_save)} Ookla points...")
+                self.logger.info(geom)
+                self.logger.info(properties)
+        self.logger.info(f"Saving {len(points_to_save)} Ookla points...")
         self.session.bulk_save_objects(points_to_save.values())
         self.session.commit()
 
@@ -120,5 +120,5 @@ if __name__ == "__main__":
     arg_slug = slugify(arg_city)
     arg_bbox = args.get("bbox", None)
     arg_bbox = list(map(float, arg_bbox.split(", ")))
-    importer = OoklaImporter(slug=arg_slug, city=arg_city, bbox=arg_bbox)
+    importer = OoklaImporter(arg_slug, arg_city, arg_bbox, logging.getLogger("import"))
     importer.run()
