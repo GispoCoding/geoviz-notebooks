@@ -15,27 +15,31 @@
 			
 		<h2>Output attributes</h2>	
 			
-			<p>When you view the result maps, you will see that they include several attributes describing that particular hexagon. Below are short explanations of each attribute.</p>
+			<p>When you view the result map, you will see that they include several map layers describing each particular hexagon. Below are short explanations of each map layer.</p>
 				<dl>
 				<dt><strong>Sum</strong></dt>
-				<dd>An index value comprised from all other attributes. The value is normalized for each individual map. This means that e.g. the hexagon containing the highest value of transit departures per day gets an index value of 1 and then other hexagons get a value relative to the highest value. This means that the theoretical maximum value for the sum index is the number of variables (datasources) used.</dd>
+				<dd>An index value comprised from all other attributes. The value is normalized for each individual map. This means that e.g. the hexagon containing the highest value of transit departures per day gets a value of 1 when summing, and the other hexagons get a value relative to the highest value. This means that the theoretical maximum value for the sum index is the number of variables (datasources) used, 6 at maximum.</dd>
 				
-				<dt><strong>OpenStreetMap amenities</strong></dt>
+				<dt><strong>Clusters</strong></dt>
+				<dd>Hexes that belong to a significant cluster of high index values (red) or low values (blue).</dd>
+				</dl>
+			
+				<dt><strong>(OpenStreetMap) Number of amenities</strong></dt>
 				<dd>Number of OpenStreetMap amenities inside the hexagon. Describes the level of services.</dd>
 
-				<dt><strong>Flickr photographers</strong></dt>
+				<dt><strong>(Flickr) Number of photographers</strong></dt>
 				<dd>Number of unique Flickr photographers inside the hexagon in the last 5 years.</dd>
 
-				<dt><strong>GTFS departures</strong></dt>
-				<dd>Transit departures per day from this hexagon</dd>
+				<dt><strong>(GTFS) Transit departures per day</strong></dt>
+				<dd>Total transit departures per day from this hexagon</dd>
 
-				<dt><strong>OpenStreeMap walking times</strong></dt>
-				<dd>Walking time from this hexagon in seconds to the fifth closest service.</dd>
+				<dt><strong>(OpenStreetMap) Walking times to five amenities</strong></dt>
+				<dd>Average walking time in seconds inside this hexagon to the fifth closest service.</dd>
 
-				<dt><strong> Ookla Internet device numbers</strong></dt>
+				<dt><strong>(Ookla) Internet device numbers</strong></dt>
 				<dd>Number of unique interenet connected devices in this hexagon which have been using the Ookla speedtest.</dd>
 
-				<dt><strong>Kontur population density</strong></dt>
+				<dt><strong>(Kontur) Population density</strong></dt>
 				<dd>How many people are estimated to live inside the hexagon.</dd>
 				</dl>
 
@@ -44,7 +48,7 @@
 		
 			<h4>OpenStreeMap amenities</h4>					
 			<p><a href="https://www.openstreetmap.org/">OpenStreetMap (OSM)</a> is the main source of services in the analysis.</p>
-			<p>Selecting appropriate tags from OpenStreetMap data is one of the most fundamental tasks in the analysis process. The selected tags are based on examples from scientific literature. The tags used currently are listed below:</p>
+			<p>Selecting appropriate tags from OpenStreetMap data is one of the most fundamental tasks in the analysis process. The selected tags are based on examples from scientific literature. The service tags currently included in analysis are listed below:</p>
 					<p> <code>    "amenity": [
 									"restaurant",
 									"bar",
@@ -86,23 +90,28 @@
 							]</code></p>
 			
 			<h4>Flickr images</h4>					
-			<p>Flickr is an image and video hosting service with a large community of users. In 2021 the platform has more than 100 million registered accounts and over 60 million monthly users. Up to 25 million photos are uploaded daily. Analysing these photos and especially their locations reveals interesting insights about the dynamics of an urban area. Flickr data has been used in a multitude of scientific studies, for example to detect areas of activity, to study spatiotemporal urban patterns, and to highlight urban hotspots especially in the context of travel and tourism</p>
-			<p>The Flickr import automatically downloads all image locations from the last 5 years. With the current setup this part of the analysis is the longest and takes ~30 minutes per city region.</p>
+			<p>Flickr is an image and video hosting service with a large community of users. In 2021 the platform has more than 100 million registered accounts and over 60 million monthly users. Up to 25 million photos are uploaded daily. Analysing these photos and especially their locations reveals interesting insights about the dynamics of an urban area. Flickr data has been used in a multitude of scientific studies, for example to detect areas of activity, to study spatiotemporal urban patterns, and to highlight urban hotspots especially in the context of travel and tourism.</p>
+			<p>The Flickr import automatically downloads all image locations from the last 5 years. This part of the analysis may take anything from one to 30 minutes per city region, depending on how many photos are found in the selected area.</p>
+			<p>To filter out photo series taken by single photographers, we only calculate the amount of <strong>different</strong> users taking photos in the region.</p>
 			<p><a href="https://www.businessinsider.com/flickr-data-shows-where-tourists-and-locals-take-pictures-2011-6?r=US&IR=T#las-vegas-just-try-getting-directions-on-the-strip-4">View how the Flickr location data has been used to analyze spatial patternt of tourists vs. locals</a></p>
 			
 			<h4>GTFS transit stops</h4>					
 			<p>GTFS is a common format, originally developed by Google, for public transportation schedules and associated geographic information. Cities and public transportation agencies share their schedule information most commonly in the GTFS format. </p>
+			<p>To consider urban accessibility, transit is key, but the number of single stops is not important. The level of service at each stop is what counts. That is why we calculate the total number of transit departures during the whole day in each hex.</p>
 			<p><a href="https://developers.google.com/transit/gtfs">Read more about GTFS data.</a></p>
 				<h5>Where to find GTFS data</h5>
-				<p>Other data sources are downloaded automatically by the service, but as a single endpoint to all GTFS feeds in the world does not exist, the user must enter manually the GTFS URL to the user interface when running the analysis. The URL should be ending with a <code>.zip</code>. So for example for Helsinki region the valid URL is http://dev.hsl.fi/gtfs/hsl.zip.  </p>	
-				<p>A good source to search for GTFS feeds is <a href="https://openmobilitydata.org/feeds"> openmobilitydata.org</a>, where you can search by city/region name. For some countries individual city feeds are non-existent, but in these cases you can use the national feed (e.g. <a href="https://gtfs.de/en/feeds/de_nv/"> Germany</a> and <a href="https://nordicopenmobilitydata.eu/data/"> Sweden</a>). </p>
+				<p>Other data sources are downloaded automatically by the service, but as a single endpoint to all GTFS feeds in the world does not exist, the user must enter manually the GTFS URL to the user interface when running the analysis. The URL should be ending with a <code>.zip</code>. So for example for Helsinki region the valid URL is http://dev.hsl.fi/gtfs/hsl.zip. Some known city feeds URLs are filled automatically when you select the city.</p>	
+				<p>A good source to search for GTFS feeds is <a href="https://openmobilitydata.org/feeds"> openmobilitydata.org</a>, where you can search by city/region name. Some googling may be needed to find out which feed is the local transit authority feed that has all the transit stops in the city; not all cities have a central transit authority.</p>
+				<p>In some countries individual city feeds are not published, but in these cases you can use the national feed (e.g. <a href="https://gtfs.de/en/feeds/de_nv/">Germany</a>, <a href="https://nordicopenmobilitydata.eu/data/">Sweden</a>, <a href="https://transitfeeds.com/p/rejseplanen/705">Denmark</a> and <a href="https://www.mnt.ee/eng/public-transportation/public-transport-information-system">Estonia</a>). </p>
 
 			<h4>OpenStreetMap walking times</h4>					
-			<p>Whereas accessibility with public transport gives an idea of longer distances, walkability helps in understanding the attractiveness of a place on a more detailed scale.  At this scale distances are short, so walking becomes an important method of transportation. To model this aspect of accessibility, the services analyzes the walkable street networks of the cities by calculating walking times from every location in the street network to certain points of interest (POIs).</p>
+			<p>Whereas accessibility with public transport gives an idea of longer distances, walkability helps in understanding the attractiveness of a place on a more detailed scale.  At this scale distances are short, so walking becomes an important method of transportation.</p>
+			<p>To model this aspect of accessibility, the service analyzes the walkable street networks of the cities by calculating walking times from every location in the walking path network to closest services of the OpenStreetMap amenity list above. The closer services are everywhere in the hex, the lower the average walking time in seconds. When summing to sum layer, of course, lower walking time gives higher index.</p>
 			<p><a href="https://www.gispo.fi/en/blog/analysing-urban-walkability-using-openstreetmap-and-python/">Read more about the walkability analysis.</a></p>
 
 			<h4>Ookla internet device numbers</h4>					
 			<p>Ookla offers worldwide datasets of Internet speeds as measured by their broadband speed test service. The datasets cover the entire globe in a sub-kilometer resolution grid, and they are therefore an excellent independent measure of broadband speeds and user numbers across the globe.</p>
+			<p>Broadband speeds may be due to only one or two high-speed users, but the number of broadband users per hex tells us about the number of devices in the hex.</p>
 			<p><a href="https://github.com/teamookla/ookla-open-data">Read more about the Ookla data.</a></p>
 			
 			<h4>Kontur population density</h4>					
@@ -110,5 +119,16 @@
 			<p>Population data is built from H3 hexagons with population counts at 400m resolution.</p>
 			<p><a href="https://data.humdata.org/dataset/kontur-population-dataset">Read more about Kontur population density data.</a></p>
 
+		<h2>Sum</h2>
+		    <p>This is the main layer you are interested in. The higher the index, the more urban activity there is in an area. Hexes that have index value zero have no activity (zero services, zero photos, zero devices, zero population, zero transit) and are not saved in the layer.</p>
+
+		<h2>Clusters</h2>
+			<p>In addition to the index value (sum) layer, you may view the clusters layer. This displays those areas that belong to a statistically significant cluster of high index values (red) or low index values (blue).</p>
+			<p>In some cases, you may also find points that are light red, which means surprising high values in a low area, and light blue, which means surprising low values in a high area.</p>
+			<p><a href="https://geodacenter.github.io/workbook/6a_local_auto/lab6a.html">Read more about the LISA statistical indicator of spatial autocorrelation.</a></p>
+			<p>Note that the spatial clusters are difficult to analyze automatically, because they depend on the size of your area. If you run the analysis for the same city with different area sizes, the results will be different.</p>
+			<p>This is because the statistical analysis is based on the whole area. You usually always have hexes with zero index value. In a large area which contains a small city, the whole city will be a cluster, standing out from the background of zero activity. In a smaller area with a bigger metropolis, there are less zero hexes, and you will get differences between different areas.</p>
+			<p><strong>If you have selected an area that has lots of countryside or water, the city will be the red (high value) cluster. The seas and forests will be the blue (low value) clusters.</strong></p>
+			<p><strong>If you have selected an area of mostly urban settlements, the most urban area(s) will be the statistically significant red cluster(s). The least urban areas will be the blue clusters.</strong></p>
 </div>
 {% endblock %}
