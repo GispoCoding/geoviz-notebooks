@@ -1,19 +1,20 @@
 import argparse
+import logging
+from logging import Logger
 import os
 import sys
-import re
 import requests
 import shapefile
 import shutil
 import zipfile
 from ipygis import get_connection_url
-from logging import Logger
 from osgeo import gdal
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Polygon
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from typing import Tuple
+from typing import List
 from geoalchemy2.shape import from_shape
+from slugify import slugify
 
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
@@ -24,13 +25,13 @@ DATA_PATH = "data"
 
 class OoklaImporter(object):
 
-    def __init__(self, slug: str, city: str, bbox: Tuple, logger: Logger):
-        self.logger = logger
+    def __init__(self, slug: str, city: str, bbox: List[float], logger: Logger):
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         # BBOX (minx, miny, maxx, maxy)
         self.bbox = bbox
         self.city = city
+        self.logger = logger
         self.download_url = "https://ookla-open-data.s3.amazonaws.com/shapefiles/performance/type=fixed/year=2021/quarter=1/"
         self.download_name = "2021-01-01_performance_fixed_tiles"
 
@@ -109,12 +110,15 @@ class OoklaImporter(object):
         self.session.bulk_save_objects(points_to_save.values())
         self.session.commit()
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Import Ookla speedtest data for given city")
     parser.add_argument("--city", default="Helsinki", help="City to import")
     parser.add_argument("--bbox", default=(24.82345, 60.14084, 25.06404, 60.29496))
     args = vars(parser.parse_args())
-    city = args.get("city", None)
-    bbox = args.get("bbox", None)
-    importer = OoklaImporter(city=city, bbox=bbox)
+    arg_city = args.get("city", None)
+    arg_slug = slugify(arg_city)
+    arg_bbox = args.get("bbox", None)
+    arg_bbox = list(map(float, arg_bbox.split(", ")))
+    importer = OoklaImporter(arg_slug, arg_city, arg_bbox, logging.getLogger("import"))
     importer.run()

@@ -1,4 +1,7 @@
 import argparse
+import logging
+from logging import Logger
+
 import fiona
 import gzip
 import os
@@ -6,13 +9,13 @@ import sys
 import requests
 import shutil
 from ipygis import get_connection_url
-from logging import Logger
 from osgeo import gdal
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Polygon
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from typing import Tuple
+from typing import List
 from geoalchemy2.shape import from_shape
+from slugify import slugify
 
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
@@ -23,8 +26,7 @@ DATA_PATH = "data"
 
 class KonturImporter(object):
 
-    def __init__(self, slug: str, city: str, bbox: Tuple, logger: Logger):
-        self.logger = logger
+    def __init__(self, slug: str, city: str, bbox: List[float], logger: Logger):
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         # BBOX (minx, miny, maxx, maxy)
@@ -32,6 +34,7 @@ class KonturImporter(object):
         self.city = city
         self.download_url = "https://adhoc.kontur.io/data/"
         self.download_name = "kontur_population_20200928.gpkg"
+        self.logger = logger
 
         # data should be stored one directory level above importers
         self.unzipped_file = os.path.join(
@@ -114,7 +117,9 @@ if __name__ == "__main__":
     parser.add_argument("--city", default="Helsinki", help="City to import")
     parser.add_argument("--bbox", default=(24.82345, 60.14084, 25.06404, 60.29496))
     args = vars(parser.parse_args())
-    city = args.get("city", None)
-    bbox = args.get("bbox", None)
-    importer = KonturImporter(city=city, bbox=bbox)
+    arg_city = args["city"]
+    arg_slug = slugify(arg_city)
+    arg_bbox = args["bbox"]
+    arg_bbox = list(map(float, arg_bbox.split(", ")))
+    importer = KonturImporter(arg_slug, arg_city, arg_bbox, logging.getLogger("import"))
     importer.run()

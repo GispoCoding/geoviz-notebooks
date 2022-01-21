@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  geoviz_test_db:
+    image: postgis/postgis:latest
+    container_name: geoviz_test_db
+    ports:
+      - "5400:5432"
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=postgres

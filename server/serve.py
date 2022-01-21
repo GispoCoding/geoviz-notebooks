@@ -23,6 +23,7 @@ app = Flask(__name__, static_url_path='')
 auth = HTTPBasicAuth()
 load_dotenv()
 allowed_username = os.getenv("USERNAME")
+dev_password = os.getenv("PASSWORD")
 allowed_hash = os.getenv("PASSWORD_HASH")
 secret_key = os.getenv("SECRET_KEY")
 if not secret_key:
@@ -32,6 +33,8 @@ app.config['SECRET_KEY'] = secret_key
 sql_url = f"postgresql://{os.environ.get('PGUSER', 'postgres')}:{os.environ.get('PGPASSWORD', '')}@{os.environ.get('PGHOST', 'localhost')}:{int(os.environ.get('PGPORT', '5432'))}/geoviz"
 #sql_url = get_connection_url(dbname="geoviz")
 engine = create_engine(sql_url)
+with engine.connect() as conn:
+    conn.execute("CREATE EXTENSION IF NOT EXISTS postgis")
 session = sessionmaker(bind=engine)()
 Analysis.__table__.create(engine, checkfirst=True)
 # store the running processes
@@ -40,8 +43,11 @@ processes = {}
 
 @auth.verify_password
 def verify_password(username, password):
-    if username == allowed_username and \
-            check_password_hash(allowed_hash, password):
+    if os.getenv("DEV_ENV"):
+        if username == allowed_username and password == dev_password:
+            return username
+    elif (username == allowed_username
+          and check_password_hash(allowed_hash, password)):
         return username
 
 

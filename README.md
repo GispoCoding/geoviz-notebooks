@@ -56,8 +56,8 @@ If you're *not* running docker, we recommend creating your own conda env, pyenv,
 which contains conda wheels. The last option should make installing all dependencies easier:
 
 ```
-pyenv install miniconda-latest
-pyenv local miniconda-latest
+pyenv install miniconda3-latest
+pyenv local miniconda3-latest
 pip install -r requirements.txt
 ```
 
@@ -85,11 +85,6 @@ the desired username and password hash in `.env` file or the corresponding envir
 
 If you wish to import data from the Flickr API, fill in your
 [Flickr api key](https://www.flickr.com/services/api/misc.api_keys.html) and secret
-in a `.env` file or the corresponding environment variable.
-
-If you wish to import OSM data faster by using city-specific
-[OSM extracts](https://www.interline.io/osm/extracts/), fill in your
-[OSM extracts api key](https://app.interline.io/products/osm_extracts/orders/new)
 in a `.env` file or the corresponding environment variable.
 
 To get https certificates, you need to add

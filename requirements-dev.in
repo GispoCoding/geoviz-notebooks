@@ -1,0 +1,4 @@
+psycopg2
+pytest
+pytest-mock
+pytest-postgresql==3.1.2

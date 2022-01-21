@@ -140,9 +140,9 @@ server/swag/
 .jupyter/
 .python_history
 .vscode/
+.idea
 cache/
 data/
 logs/
 maps/
-pgdata/
 osm2pgsql/

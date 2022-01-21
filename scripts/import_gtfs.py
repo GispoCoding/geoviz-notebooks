@@ -1,16 +1,18 @@
 import argparse
+import logging
+from logging import Logger
 import os
 import sys
-import re
 import requests
+from typing import List
+
+from slugify import slugify
 from gtfs_functions import import_gtfs, stops_freq
 from ipygis import get_connection_url
-from logging import Logger
-from shapely.geometry import Point
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from geoalchemy2.shape import from_shape
-from typing import List
+
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
 from models import GTFSStop
@@ -40,12 +42,12 @@ DATA_PATH = "data"
 
 class GTFSImporter(object):
     def __init__(self, slug: str, city: str, logger: Logger, url: str = "", bbox: List[float] = None):
-        self.logger = logger
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         self.city = city
         # optional bbox allows filtering gtfs layer
         self.bbox = bbox
+        self.logger = logger
         if url:
             self.url = url
         else:
@@ -122,7 +124,8 @@ if __name__ == "__main__":
     parser.add_argument("--city", default="Helsinki", help="City to import")
     parser.add_argument("--url", default=None, help="GTFS url to import")
     args = vars(parser.parse_args())
-    city = args.get("city", None)
-    url = args.get("url", None)
-    importer = GTFSImporter(city=city, url=url)
+    arg_city = args.get("city", None)
+    arg_slug = slugify(arg_city)
+    arg_url = args.get("url", None)
+    importer = GTFSImporter(arg_slug, arg_city, logging.getLogger("import"), arg_url)
     importer.run()

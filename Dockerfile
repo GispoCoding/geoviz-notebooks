@@ -11,22 +11,11 @@ RUN apt-get update \
     gdal-bin \
     # For gdal python bindings
     libgdal-dev \
-    # For building osm2pgsql 1.5 (not available in apt)
-    make cmake g++ libboost-dev libboost-system-dev libboost-filesystem-dev libexpat1-dev zlib1g-dev libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Build osm2pgsql 1.5 (not available in apt)
-WORKDIR /tmp
-RUN git clone https://github.com/openstreetmap/osm2pgsql.git \
-    && mkdir osm2pgsql/build
-WORKDIR /tmp/osm2pgsql/build
-RUN cmake .. \
-    && make \
-    && make install
-
 COPY requirements.txt /tmp/
-RUN pip install --no-cache-dir --upgrade -r /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Add js files required for interactive Kepler
 RUN jupyter nbextension install --py --sys-prefix keplergl \
@@ -66,7 +55,7 @@ ENV NB_USER=analyst \
 FROM common AS geoviz-server
 
 COPY server/requirements-serve.txt /tmp/
-RUN pip install --no-cache-dir --upgrade -r /tmp/requirements-serve.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-serve.txt
 
 # For flask server, looks like pip install uwsgi fails for some reason
 RUN conda install uwsgi
