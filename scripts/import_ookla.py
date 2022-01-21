@@ -62,7 +62,7 @@ class OoklaImporter(object):
             with requests.get(f"{self.download_url}{self.download_name}.zip", stream=True) as request:
                 with open(self.download_file, 'wb') as file:
                     shutil.copyfileobj(request.raw, file)
-        if not os.path.isdir(self.unzipped_path):
+        if not os.path.isdir(self.unzipped_path) or not os.path.isfile(f"{self.unzipped_path}/gps_fixed_tiles.shp"):
             self.logger.info("Extracting zip...")
             with zipfile.ZipFile(self.download_file, 'r') as zip_ref:
                 zip_ref.extractall(self.unzipped_path)
