@@ -4,6 +4,7 @@ import argparse
 import copy
 import datetime
 import os
+import psutil
 import requests
 from dotenv import load_dotenv
 from datasets import DATASETS
@@ -22,6 +23,7 @@ from sqlalchemy.exc import IntegrityError, ProgrammingError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.schema import CreateSchema
 from sqlalchemy_utils.functions import database_exists, create_database
+from time import sleep
 
 from models import Analysis
 from util import create_logger
@@ -142,18 +144,34 @@ def mark_imported(dataset: str):
     session.commit()
 
 
+# Some imports are memory hogs. We don't want to run too many concurrently.
+def wait_for_available_memory(gb_needed: int):
+    # First come, first serve.
+    # This only matters when multiple cities are imported at the same time.
+    # So, the server size limits the number of concurrent imports.
+    REQUIRED = gb_needed * 1024 * 1024 * 1024
+    while psutil.virtual_memory().available < REQUIRED:
+        logger.warning("Not enough memory to run at the moment.")
+        logger.warning(f"{psutil.virtual_memory().available} available.")
+        logger.warning(f"{REQUIRED} required.")
+        logger.warning("Checking again in a minute...")
+        sleep(60.0)
+
+
 logger.info(f"{city} bounding box {bbox}")
 
 if "osm" in datasets:
     logger.info(f"--- Importing OSM data for {city} ---")
     osm_bbox = ", ".join([str(coord) for coord in bbox])
     osm_importer = OsmImporter({"slug": slug, "bbox": osm_bbox}, logger)
+    wait_for_available_memory(2)
     osm_importer.run()
     mark_imported("osm")
 
 if "flickr" in datasets:
     logger.info(f"--- Importing Flickr data for {city} ---")
     flick_importer = FlickrImporter(slug, bbox, logger)
+    wait_for_available_memory(1)
     flick_importer.run()
     mark_imported("flickr")
 
@@ -165,24 +183,30 @@ if "gtfs" in datasets:
     else:
         logger.info(f"--- Importing GTFS data for {city} ---")
         gtfs_importer = GTFSImporter(slug, city, logger, bbox=bbox)
+    wait_for_available_memory(2)
     gtfs_importer.run()
     mark_imported("gtfs")
 
 if "access" in datasets:
     logger.info(f"--- Importing OSM walkability & accessibility data for {city} ---")
     accessibility_importer = AccessibilityImporter(slug, bbox, logger)
+    # The accessibility importer is a beast. Creating and routing thru the graph requires
+    # several gigabytes of memory, depending on the size of your city.
+    wait_for_available_memory(6)
     accessibility_importer.run()
     mark_imported("access")
 
 if "ookla" in datasets:
     logger.info(f"--- Importing Ookla speedtest data for {city} ---")
     ookla_importer = OoklaImporter(slug, city, bbox, logger)
+    wait_for_available_memory(4)
     ookla_importer.run()
     mark_imported("ookla")
 
 if "kontur" in datasets:
     logger.info(f"--- Importing Kontur population data for {city} ---")
     kontur_importer = KonturImporter(slug, city, bbox, logger)
+    wait_for_available_memory(4)
     kontur_importer.run()
     mark_imported("kontur")
 
@@ -194,6 +218,7 @@ if export:
     if delete:
         export_string += " --delete"
     export_path = os.path.join(os.path.dirname(__loader__.path), export_string)
+    wait_for_available_memory(3)
     os.system(export_path)
 
 analysis.finish_time = datetime.datetime.now()
