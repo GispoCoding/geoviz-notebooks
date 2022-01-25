@@ -2,7 +2,7 @@ import os
 import secrets
 import subprocess
 import sys
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv, set_key
 from flask import Flask, redirect, render_template, request, send_from_directory
 from flask_httpauth import HTTPBasicAuth
 from slugify import slugify
@@ -132,12 +132,25 @@ def analysis_for_city(city):
     return('', 404)
 
 
+def save_apikeys(form: AnalysisForm):
+    if form.flickr_apikey.data:
+        os.environ["FLICKR_API_KEY"] = form.flickr_apikey.data
+        set_key(find_dotenv(), "FLICKR_API_KEY", form.flickr_apikey.data)
+    if form.flickr_secret.data:
+        os.environ["FLICKR_SECRET"] = form.flickr_secret.data
+        set_key(find_dotenv(), "FLICKR_SECRET", form.flickr_secret.data)
+    if form.mapbox_apikey.data:
+        os.environ["MAPBOX_API_KEY"] = form.mapbox_apikey.data
+        set_key(find_dotenv(), "FLICKR_SECRET", form.mapbox_apikey.data)
+
+
 @app.route('/', methods=["GET", "POST"])
 @auth.login_required
 def home():
     # our fancy UI
     form = AnalysisForm()
     if form.validate_on_submit():
+        save_apikeys(form)
         city_name = form.bbox.form.city.data
         gtfs_url = form.gtfs_url.data
         bbox_string = " ".join(form.bbox.form.bbox.data.split(","))

@@ -1,16 +1,19 @@
+import os
 import sys
 #from flask_admin.contrib.geoa.widgets import LeafletWidget
+from dotenv import load_dotenv
 from flask_wtf import FlaskForm
 from markupsafe import Markup
 from sqlalchemy.sql.sqltypes import String
 from wtforms import Field, FormField, SelectMultipleField, StringField, SubmitField
 from wtforms.fields.core import Field
-from wtforms.validators import DataRequired, Length, Optional, URL
+from wtforms.validators import DataRequired, Optional, Regexp, URL
 from wtforms.widgets import html_params, CheckboxInput, ListWidget
 
 # test simple import now, convert to module later
 sys.path.insert(0, "..")
 from datasets import DATASETS
+load_dotenv()
 
 
 class LeafletWidget(object):
@@ -88,7 +91,16 @@ class AnalysisForm(FlaskForm):
         'GTFS feed location for the city',
         [Optional(), URL(message='Please input a valid GTFS URL.')]
     )
-    flickr_apikey = StringField('API key for flickr API')
+    flickr_apikey = StringField(
+        'API key for flickr API',
+        [Optional(), Regexp(r'^[0-9a-f]{32}$', message='The flickr API key must have 32 digits or characters a-f.')],
+        default=os.getenv("FLICKR_API_KEY")
+        )
+    flickr_secret = StringField(
+        'Secret for flickr API key',
+        [Optional(), Regexp(r'^[0-9a-f]{16}$', message='The flickr secret must have 16 digits or characters a-f.')],
+        default=os.getenv("FLICKR_SECRET")
+        )
     mapbox_apikey = StringField('API key for Mapbox')
 
     bbox = FormField(CitySelectionForm)

@@ -91,7 +91,8 @@
 			
 			<h4>Flickr images</h4>					
 			<p>Flickr is an image and video hosting service with a large community of users. In 2021 the platform has more than 100 million registered accounts and over 60 million monthly users. Up to 25 million photos are uploaded daily. Analysing these photos and especially their locations reveals interesting insights about the dynamics of an urban area. Flickr data has been used in a multitude of scientific studies, for example to detect areas of activity, to study spatiotemporal urban patterns, and to highlight urban hotspots especially in the context of travel and tourism.</p>
-			<p>The Flickr import automatically downloads all image locations from the last 5 years. This part of the analysis may take anything from one to 30 minutes per city region, depending on how many photos are found in the selected area.</p>
+			<p>The flickr import automatically downloads all image locations from the last 5 years. This part of the analysis may take anything from one to 30 minutes per city region, depending on how many photos are found in the selected area.</p>
+			<p>The flickr API requires api key and secret to download data. Please note that the flickr API has a maximum of 3000 queries per day, and fetching more than a dozen cities a day will temporarily prevent flickr import due to flickr restrictions.</p>
 			<p>To filter out photo series taken by single photographers, we only calculate the amount of <strong>different</strong> users taking photos in the region.</p>
 			<p><a href="https://www.businessinsider.com/flickr-data-shows-where-tourists-and-locals-take-pictures-2011-6?r=US&IR=T#las-vegas-just-try-getting-directions-on-the-strip-4">View how the Flickr location data has been used to analyze spatial patternt of tourists vs. locals</a></p>
 			
@@ -125,7 +126,7 @@
 		<h2>Clusters</h2>
 			<p>In addition to the index value (sum) layer, you may view the clusters layer. This displays those areas that belong to a statistically significant cluster of high index values (red) or low index values (blue).</p>
 			<p>In some cases, you may also find points that are light red, which means surprising high values in a low area, and light blue, which means surprising low values in a high area.</p>
-			<p><a href="https://geodacenter.github.io/workbook/6a_local_auto/lab6a.html">Read more about the LISA statistical indicator of spatial autocorrelation.</a></p>
+			<p><a href="https://geodacenter.github.io/workbook/6a_local_auto/lab6a.html">Read more about the LISA statistical indicator of spatial autocorrelation.</a> Note that the clusters are calculated from all <strong>surrounding</strong> hexes. The exact location of a single hex is not significant: it means that all surrounding hexes also have high activity. Therefore, clusters denote larger areas of similar activity.</p>
 			<p>Note that the spatial clusters are difficult to analyze automatically, because they depend on the size of your area. If you run the analysis for the same city with different area sizes, the results will be different.</p>
 			<p>This is because the statistical analysis is based on the whole area. You usually always have hexes with zero index value. In a large area which contains a small city, the whole city will be a cluster, standing out from the background of zero activity. In a smaller area with a bigger metropolis, there are less zero hexes, and you will get differences between different areas.</p>
 			<p><strong>If you have selected an area that has lots of countryside or water, the city will be the red (high value) cluster. The seas and forests will be the blue (low value) clusters.</strong></p>
