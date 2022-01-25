@@ -176,7 +176,7 @@ def home():
     running_analyses = session.query(Analysis).filter(Analysis.finish_time.is_(None)).all()
     return render_template(
         'home.html',
-        title="Gispo Spatial Analytics",
+        title="Gispo Urban Analytics",
         description="Import urban datasets and run analyses.",
         form=form,
         running=running_analyses,
