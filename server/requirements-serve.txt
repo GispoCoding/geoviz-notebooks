@@ -2,3 +2,4 @@
 Flask==2.0.2
 Flask-HTTPAuth==4.5.0
 flask-wtf==0.15.1
+psutil==5.9.0
