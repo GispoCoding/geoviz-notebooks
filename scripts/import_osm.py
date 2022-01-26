@@ -26,6 +26,9 @@ class OsmImporter(object):
         self.bbox = args["bbox"]
         self._engine = self._create_engine()
         self.logger = logger
+        # configure the osmnx importer to not timeout even with very dense areas
+        # in such cases, 50x50 km square contains too much data
+        ox.utils.config(max_query_area_size=25 * 1000 * 25 * 1000)
 
     @staticmethod
     def _parse_args(args) -> Dict:

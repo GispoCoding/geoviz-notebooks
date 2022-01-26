@@ -34,6 +34,10 @@ class AccessibilityImporter(object):
         OSMAccessNode.__table__.drop(schema_engine, checkfirst=True)
         OSMAccessNode.__table__.create(schema_engine)
 
+        # configure the osmnx importer to not timeout even with very dense areas
+        # in such cases, 50x50 km square contains too much data
+        ox.utils.config(max_query_area_size=25 * 1000 * 25 * 1000)
+
     def run(self):
         self.logger.info("Fetching graph from Overpass API...")
         # Get graph based on bbox
