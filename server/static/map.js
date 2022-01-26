@@ -23,8 +23,10 @@ if (document.getElementById('bbox_map')) {
         // make new bbox editable
         bboxFeature.getLayers()[0].enableEdit();
         bboxMap.fitBounds(bounds);
+        checkBbox(bbox);
     }
 
+    // TODO: convert this to allow drawing a new bbox without selecting a city first?
     // event handlers
     // Disable finding bbox by clicking. Will interfere with actually editing the bbox.
     // bboxMap.on("click", e => {
@@ -39,6 +41,8 @@ if (document.getElementById('bbox_map')) {
     //         });
     // });
     bboxMap.on("editable:editing", e => {
-        document.getElementById('bbox-bbox').value = bboxFeature.getBounds().toBBoxString();
+        bboxString = bboxFeature.getBounds().toBBoxString();
+        document.getElementById('bbox-bbox').value = bboxString;
+        checkBbox(bboxString.split(","));
     });
 };

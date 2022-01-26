@@ -23,28 +23,28 @@
                 {% endif %}
                 <div class="row">
                     <div class="col m12 l5">
-                        <fieldset class="form-field">
+                        <fieldset id="dataset_selection_form" class="form-field">
                             {{ form.dataset_selection.label }}
                             {{ form.dataset_selection }}
                             {% for error in form.dataset_selection.errors %}
-                                <div class="card-panel red lighten-2">
+                                <div id="dataset_selection_form_error_box" class="card-panel red lighten-2">
                                     <span class="white-text">{{ error }}</span>
                                 </div>
                             {% endfor %}
                         </fieldset>
             
-                        <fieldset class="form-field">
+                        <fieldset id="flickr_form" class="form-field">
                             {{ form.flickr_apikey.label }}
                             {{ form.flickr_apikey }}
                             {{ form.flickr_secret.label }}
                             {{ form.flickr_secret }}
                             {% for error in form.flickr_apikey.errors %}
-                            <div class="card-panel red lighten-2">
+                            <div id="flickr_key_error_error_box" class="card-panel red lighten-2">
                                 <span class="white-text">{{ error }}</span>
                             </div>
                             {% endfor %}
                             {% for error in form.flickr_secret.errors %}
-                            <div class="card-panel red lighten-2">
+                            <div id="flickr_secret_error_error_box"  class="card-panel red lighten-2">
                                 <span class="white-text">{{ error }}</span>
                             </div>
                             {% endfor %}
@@ -56,24 +56,24 @@
                         </fieldset> -->
                     </div>
                     <div class="col m12 l7">
-                        <fieldset class="form-field">
+                        <fieldset id="city_selection_form" class="form-field">
                             {{ form.bbox.csrf_token }}
                             {{ form.bbox.map }}
                             {{ form.bbox.city.label }}
                             {{ form.bbox.city(autocomplete="off") }}
                             {% for error in form.bbox.city.errors %}
-                                <div class="card-panel red lighten-2">
+                                <div id="city_selection_form_error_box" class="card-panel red lighten-2">
                                     <span class="white-text">{{ error }}</span>
                                 </div>
                             {% endfor %}
                             {{ form.bbox.bbox.label }}
                             {{ form.bbox.bbox(readonly=true) }}
                         </fieldset>
-                        <fieldset class="form-field">
+                        <fieldset id="gtfs_url_form" class="form-field">
                             {{ form.gtfs_url.label }}
                             {{ form.gtfs_url }}
                             {% for error in form.gtfs_url.errors %}
-                                <div class="card-panel red lighten-2">
+                                <div id="gtfs_url_form_error_box" class="card-panel red lighten-2">
                                     <span class="white-text">{{ error }}</span>
                                 </div>
                             {% endfor %}

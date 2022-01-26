@@ -14,4 +14,5 @@ function setGtfsUrl(city) {
                 document.getElementById('gtfs_url').value = '';
             };
         });
+    checkGtfsUrl();
 };

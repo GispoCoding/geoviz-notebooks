@@ -69,7 +69,7 @@ class LeafletField(Field):
 class CitySelectionForm(FlaskForm):
     map = LeafletField()
     city = StringField(
-        'Type the name of the city, or click on the map to select a specific neighborhood',
+        'Type the name of the city and adjust the bounding box to desired size',
         [DataRequired(message='Please select a city to run analysis on.')]
         )
     bbox = StringField(
@@ -85,11 +85,12 @@ class AnalysisForm(FlaskForm):
         choices=[
             # choices must be a list of (key, name) pairs
             (key, value['label']) for key, value in DATASETS.items()
-        ]
+        ],
+        default=DATASETS.keys(),
     )
     gtfs_url = StringField(
         'GTFS feed location for the city',
-        [Optional(), URL(message='Please input a valid GTFS URL.')]
+        [Optional(), URL(message='You must input a valid GTFS URL if you want to include GTFS in your analysis.')]
     )
     flickr_apikey = StringField(
         'API key for flickr API',
