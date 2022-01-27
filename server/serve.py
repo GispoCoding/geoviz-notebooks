@@ -133,15 +133,16 @@ def analysis_for_city(city):
 
 
 def save_apikeys(form: AnalysisForm):
+    # TODO: set_key will not work inside the container. figure out how to make the changes permanent
     if form.flickr_apikey.data:
         os.environ["FLICKR_API_KEY"] = form.flickr_apikey.data
-        set_key(find_dotenv(), "FLICKR_API_KEY", form.flickr_apikey.data)
+        # set_key(find_dotenv(), "FLICKR_API_KEY", form.flickr_apikey.data)
     if form.flickr_secret.data:
         os.environ["FLICKR_SECRET"] = form.flickr_secret.data
-        set_key(find_dotenv(), "FLICKR_SECRET", form.flickr_secret.data)
+        # set_key(find_dotenv(), "FLICKR_SECRET", form.flickr_secret.data)
     if form.mapbox_apikey.data:
         os.environ["MAPBOX_API_KEY"] = form.mapbox_apikey.data
-        set_key(find_dotenv(), "FLICKR_SECRET", form.mapbox_apikey.data)
+        # set_key(find_dotenv(), "FLICKR_SECRET", form.mapbox_apikey.data)
 
 
 @app.route('/', methods=["GET", "POST"])
