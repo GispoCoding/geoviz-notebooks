@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from flask_wtf import FlaskForm
 from markupsafe import Markup
 from sqlalchemy.sql.sqltypes import String
-from wtforms import Field, FormField, SelectMultipleField, StringField, SubmitField
+from wtforms import Field, FieldList, FormField, SelectMultipleField, StringField, SubmitField
 from wtforms.fields.core import Field
 from wtforms.validators import DataRequired, Optional, Regexp, URL
 from wtforms.widgets import html_params, CheckboxInput, ListWidget
@@ -88,9 +88,13 @@ class AnalysisForm(FlaskForm):
         ],
         default=DATASETS.keys(),
     )
-    gtfs_url = StringField(
-        'GTFS feed location for the city',
-        [Optional(), URL(message='You must input a valid GTFS URL if you want to include GTFS in your analysis.')]
+    gtfs_urls = FieldList(
+        StringField(
+            'GTFS feed(s) URL(s) for the city. You may add multiple GTFS sources by clicking +.',
+            [Optional(), URL(message='You must input at least one valid GTFS URL if you want to include GTFS in your analysis.')]
+        ),
+        min_entries=10,
+        max_entries=10
     )
     flickr_apikey = StringField(
         'API key for flickr API',

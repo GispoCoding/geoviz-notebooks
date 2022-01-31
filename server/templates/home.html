@@ -70,9 +70,15 @@
                             {{ form.bbox.bbox(readonly=true) }}
                         </fieldset>
                         <fieldset id="gtfs_url_form" class="form-field">
-                            {{ form.gtfs_url.label }}
-                            {{ form.gtfs_url }}
-                            {% for error in form.gtfs_url.errors %}
+                            {{ form.gtfs_urls[0].label}}
+                            {{ form.gtfs_urls[0] }}
+                            <button id="gtfs_url_row_remove" class="btn-floating btn-small waves-effect waves-light" disabled>
+                                <i class="material-icons">remove</i>
+                            </button>
+                            <button id="gtfs_url_row_add" class="btn-floating btn-small waves-effect waves-light">
+                                <i class="material-icons">add</i>
+                            </button>
+                            {% for error in form.gtfs_urls.errors %}
                                 <div id="gtfs_url_form_error_box" class="card-panel red lighten-2">
                                     <span class="white-text">{{ error }}</span>
                                 </div>

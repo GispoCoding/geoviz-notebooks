@@ -54,7 +54,7 @@ var flickrForm = document.getElementById('flickr_form')
 var flickrApikeyField = document.getElementById('flickr_apikey')
 var flickrSecretField = document.getElementById('flickr_secret')
 var gtfsForm = document.getElementById("gtfs_url_form")
-var gtfsField = document.getElementById("gtfs_url")
+var gtfsField = document.getElementById("gtfs_urls-0")
 var flickrCheckbox = document.querySelector('input[value="flickr"]')
 var gtfsCheckbox = document.querySelector('input[value="gtfs"]')
 
@@ -71,14 +71,17 @@ function checkFlickrKeys () {
     }
 }
 
-function checkGtfsUrl () {
+function checkGtfsUrls () {
+    var gtfsFields = document.querySelectorAll('input[id^="gtfs_urls-"]')
     removeError(gtfsForm)
     if (gtfsCheckbox.checked) {
         try {
-            new URL(gtfsField.value)
+            gtfsFields.forEach(
+                (field) => new URL(field.value)
+            )
         }
         catch (error) {
-            addError(gtfsForm, "You must input a valid GTFS URL if you want to include GTFS in your analysis.")
+            addError(gtfsForm, "GTFS URL must be valid URL and cannot be empty.")
         }
     }
 }
@@ -86,5 +89,5 @@ function checkGtfsUrl () {
 flickrApikeyField.addEventListener('input', () => {checkFlickrKeys()})
 flickrSecretField.addEventListener('input', () => {checkFlickrKeys()})
 flickrCheckbox.addEventListener('click', () => {checkFlickrKeys()})
-gtfsField.addEventListener('input', () => {checkGtfsUrl()})
+gtfsField.addEventListener('input', () => {checkGtfsUrls()})
 gtfsCheckbox.addEventListener('click', () => {checkGtfsUrl()})

@@ -4,7 +4,7 @@ from logging import Logger
 import os
 import sys
 import requests
-from typing import List
+from typing import List, Optional
 
 from slugify import slugify
 from gtfs_functions import import_gtfs, stops_freq
@@ -41,12 +41,16 @@ DATA_PATH = "data"
 
 
 class GTFSImporter(object):
-    def __init__(self, slug: str, city: str, logger: Logger, url: str = "", bbox: List[float] = None):
+    def __init__(self, slug: str, city: str, logger: Logger, url: str = "", bbox: List[float] = None, dataset_number: Optional[int] = None):
         if not city or not slug:
             raise AssertionError("You must specify the city name.")
         self.city = city
         # optional bbox allows filtering gtfs layer
         self.bbox = bbox
+        # In some cases, we want to import multiple datasets. Keep the stop ids separate
+        # - If they are the same stop, frequencies will be summed in the same hex anyway.
+        # - In some cities, multiple stops by different companies in different places may share the same id.
+        self.dataset_number = dataset_number
         self.logger = logger
         if url:
             self.url = url
@@ -59,26 +63,32 @@ class GTFSImporter(object):
             schema_translate_map={'schema': slug}
         )
         self.session = sessionmaker(bind=schema_engine)()
-        GTFSStop.__table__.drop(schema_engine, checkfirst=True)
-        GTFSStop.__table__.create(schema_engine)
+
+        # We may import multiple gtfs datasets to the same table.
+        if not self.dataset_number:
+            GTFSStop.__table__.drop(schema_engine, checkfirst=True)
+        GTFSStop.__table__.create(schema_engine, checkfirst=True)
 
     def run(self):
         if not self.url:
             self.logger.error(f"GTFS data not found for {self.city}, skipping.")
             return
         # data should be stored one directory level above importers
-        filename = os.path.join(
+        # Reload the data from the URL, *don't* rely on saved zip if url is provided!!
+        # Note that we may have multiple gtfs feeds per city.
+        file_path = os.path.join(
             os.path.dirname(os.path.dirname(__loader__.path)),
-            DATA_PATH,
-            f"{self.city}.gtfs.zip"
+            DATA_PATH
         )
-        if os.path.isfile(filename):
-            self.logger.info("Found saved gtfs zip...")
+        if self.dataset_number:
+            filename = os.path.join(file_path, f"{self.city}-{self.dataset_number}.gtfs.zip")
         else:
-            self.logger.info("Downloading gtfs zip...")
-            response = requests.get(self.url, allow_redirects=True)
-            with open(filename, 'wb') as file:
-                file.write(response.content)
+            filename = os.path.join(file_path, f"{self.city}.gtfs.zip")
+        self.logger.info("Downloading gtfs zip...")
+        response = requests.get(self.url, allow_redirects=True)
+        # always reload the GTFS feed, we don't want to save old feeds if new ones are present
+        with open(filename, 'wb') as file:
+            file.write(response.content)
 
         self.logger.info("Loading gtfs zip...")
         routes, stops, stop_times, trips, shapes = import_gtfs(filename)
@@ -110,6 +120,8 @@ class GTFSImporter(object):
         self.logger.info(f"Found {len(outbound_frequencies)} GTFS stops, importing...")
         for stop in outbound_frequencies:
             stop_id = stop.pop("stop_id")
+            if self.dataset_number:
+                stop_id = f"{self.dataset_number}-{stop_id}"
             geom = from_shape(stop.pop("geometry"), srid=4326)
             # use dict, since the json may contain the same stop twice!
             if stop_id in stops_to_save:

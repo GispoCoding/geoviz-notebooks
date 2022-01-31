@@ -153,7 +153,7 @@ def home():
     if form.validate_on_submit():
         save_apikeys(form)
         city_name = form.bbox.form.city.data
-        gtfs_url = form.gtfs_url.data
+        gtfs_urls = " ".join(form.gtfs_urls.data)
         bbox_string = " ".join(form.bbox.form.bbox.data.split(","))
         dataset_string = " ".join(form.dataset_selection.data)
         # this should be safe, as shell injections are not possible with Popen
@@ -166,7 +166,7 @@ def home():
             "--bbox",
             bbox_string,
             "--gtfs",
-            gtfs_url,
+            gtfs_urls,
             "--export",
             "--delete"  # by default, delete imported data after analysis since the UI won't need it
         ])

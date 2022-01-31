@@ -34,10 +34,11 @@ osmnames_url = os.getenv("OSMNAMES_URL")
 
 parser = argparse.ArgumentParser(description="Import all datasets for a given city")
 parser.add_argument("city", default="Helsinki", help="City to import")
-parser.add_argument("--gtfs", help="Optional GTFS feed URL")
+parser.add_argument("--gtfs", help="Optional GTFS feed URL(s). E.g. \"http://web.mta.info/developers/data/nyct/subway/google_transit.zip http://web.mta.info/developers/data/nyct/bus/google_transit_manhattan.zip\""
+)
 parser.add_argument("--datasets",
                     default=" ".join([dataset for dataset in DATASETS]),
-                    help="Datasets to import. Default is to import all. E.g. \"osm access kontur\""
+                    help="Datasets to import. Default is to import all. E.g. \"osm gtfs access ookla kontur\""
                     )
 parser.add_argument("--bbox", help="Use different bbox for the city. Format \"minx miny maxx maxy\"")
 parser.add_argument("--export",
@@ -57,7 +58,8 @@ city = args["city"]
 slug = slugify(city)
 dataset_string = args["datasets"]
 datasets = dataset_string.split()
-gtfs_url = args.get("gtfs", None)
+gtfs_url_string = args.get("gtfs", None)
+gtfs_urls = gtfs_url_string.split()
 bbox = args.get("bbox", None)
 export = args.get("export", False)
 delete = args.get("delete", False)
@@ -105,10 +107,10 @@ analysis = Analysis(
     slug=slug,
     name=city,
     bbox=from_shape(box(*bbox)),
-    # mark datasets like {selected: ['osm', 'flickr'], imported: ['osm']}
+    # mark datasets like {selected: ['osm', 'gtfs'], imported: ['osm']}
     datasets={"selected": datasets, "imported": []},
-    # mark params like {gtfs: {url: http://example.com}}
-    parameters={'gtfs': {'url': gtfs_url}}
+    # mark params like {gtfs: {urls: [http://example.com, http://another-url.com]}}
+    parameters={'gtfs': {'urls': gtfs_urls}}
 )
 session.add(analysis)
 
@@ -122,8 +124,8 @@ except IntegrityError:
     analysis.bbox = from_shape(box(*bbox))
     analysis.viewed = False
     analysis.finish_time = None
-    if gtfs_url:
-        analysis.parameters = {'gtfs': {'url': gtfs_url}}
+    if gtfs_urls:
+        analysis.parameters = {'gtfs': {'urls': gtfs_urls}}
     analysis.datasets = copy.deepcopy(analysis.datasets)
     analysis.datasets["selected"] = datasets
     session.commit()
@@ -176,15 +178,20 @@ if "flickr" in datasets:
     mark_imported("flickr")
 
 if "gtfs" in datasets:
-    # GTFS importer uses the provided URL or, failing that, default values for some cities
-    if gtfs_url:
-        logger.info(f"--- Importing GTFS data from {gtfs_url} ---")
-        gtfs_importer = GTFSImporter(slug, city, logger, gtfs_url, bbox)
-    else:
+    # GTFS importer uses the provided URL(s) or, failing that, default values for some cities
+    index = 1
+    for url in gtfs_urls:
+        logger.info(f"--- Importing GTFS dataset #{index} from {url} ---")
+        # Enumerate the gtfs stops according to which dataset they came from
+        gtfs_importer = GTFSImporter(slug, city, logger, url, bbox, index)
+        wait_for_available_memory(2)
+        gtfs_importer.run()
+        index += 1
+    if not gtfs_urls:
         logger.info(f"--- Importing GTFS data for {city} ---")
         gtfs_importer = GTFSImporter(slug, city, logger, bbox=bbox)
-    wait_for_available_memory(2)
-    gtfs_importer.run()
+        wait_for_available_memory(2)
+        gtfs_importer.run()
     mark_imported("gtfs")
 
 if "access" in datasets:
