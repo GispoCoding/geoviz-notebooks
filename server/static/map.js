@@ -5,9 +5,7 @@ if (document.getElementById('bbox_map')) {
     L.tileLayer(tilesUrl, {
         maxZoom: 18,
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        id: 'osm',
-        tileSize: 512,
-        zoomOffset: -1
+        id: 'osm'
     }).addTo(bboxMap);
 
     // editable layer
