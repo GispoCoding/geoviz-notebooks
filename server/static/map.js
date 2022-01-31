@@ -4,7 +4,7 @@ if (document.getElementById('bbox_map')) {
 
     L.tileLayer(tilesUrl, {
         maxZoom: 18,
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        attribution: 'Map <a href="https://memomaps.de/">memomaps.de</a> <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         id: 'osm'
     }).addTo(bboxMap);
 
