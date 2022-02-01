@@ -77,11 +77,18 @@ function checkGtfsUrls () {
     if (gtfsCheckbox.checked) {
         try {
             gtfsFields.forEach(
-                (field) => new URL(field.value)
+                (field) => {
+                    // check URL validity
+                    new URL(field.value)
+                    // Check file type. Accept transitfeed download URLs too.
+                    if (!field.value.endsWith(".zip") && !field.value.endsWith("download")) {
+                        throw 'File must be .zip!'
+                    }
+                }
             )
         }
         catch (error) {
-            addError(gtfsForm, "GTFS URL must be valid URL and cannot be empty.")
+            addError(gtfsForm, "GTFS URL must point to a .zip file and cannot be empty.")
         }
     }
 }
