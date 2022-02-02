@@ -97,7 +97,7 @@ read [Swag instructions](https://docs.linuxserver.io/general/swag#create-contain
 
 ## How to use the UI
 
-Please, [add your API keys and username/password hash in the configuration](#configuration) first.
+Please, [add your API keys and username/password hash in the configuration](#configuration) first. For development convenience you may set a clear-text password instead if running the dev container.
 Then, start your local dev server at http://localhost:5000 by
 ```
 docker-compose up dev    # if you are running docker
