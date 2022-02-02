@@ -85,7 +85,8 @@ the desired username and password hash in `.env` file or the corresponding envir
 
 If you wish to import data from the Flickr API, fill in your
 [Flickr api key](https://www.flickr.com/services/api/misc.api_keys.html) and secret
-in a `.env` file or the corresponding environment variable.
+in a `.env` file or the corresponding environment variable. The API key may also be set in 
+the UI for each import run, but it will not persist to the server environment.
 
 To get https certificates on AWS EC2, you need to add your own domain and subdomain in `.env` and your
 AWS access credentials in `server/swag/dns-conf/route53.ini`. If you use MFA, you have to
