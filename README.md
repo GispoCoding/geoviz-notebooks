@@ -87,10 +87,12 @@ If you wish to import data from the Flickr API, fill in your
 [Flickr api key](https://www.flickr.com/services/api/misc.api_keys.html) and secret
 in a `.env` file or the corresponding environment variable.
 
-To get https certificates, you need to add
-your own domain and subdomain in [docker-compose.yml#L17] and your
-AWS access credentials in server/swag/dns-conf/route53.ini , or read [Swag instructions](https://docs.linuxserver.io/general/swag#create-container-via-dns-validation-with-a-wildcard-cert) and change DNSPLUGIN value at [docker-compose.yml#L20] if you are running on a provider
-other than AWS.
+To get https certificates on AWS EC2, you need to add your own domain and subdomain in `.env` and your
+AWS access credentials in `server/swag/dns-conf/route53.ini`. If you use MFA, you have to
+create a separate non-MFA-role specific to your EC2 instance and instead add `role_arn` and
+`credential_source=Ec2InstanceMetadata` in `route53.ini` just like in [AWS Config file](https://docs.aws.amazon.com/cli/latest/topic/config-vars.html#using-aws-iam-roles). This will allow [Swag](https://docs.linuxserver.io/general/swag) to automatically
+retrieve and update your certificate. If you are running on a provider other than AWS,
+read [Swag instructions](https://docs.linuxserver.io/general/swag#create-container-via-dns-validation-with-a-wildcard-cert) and change DNSPLUGIN value at [docker-compose.yml#L20].
 
 ## How to use the UI
 
