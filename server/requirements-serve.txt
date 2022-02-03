@@ -1,5 +1,6 @@
 # Web server extra requirements, installed in addition to requirements.txt
 Flask==2.0.2
 Flask-HTTPAuth==4.5.0
-flask-wtf==0.15.1
+flask-wtf==1.0.0
 psutil==5.9.0
+WTForms==3.0.1

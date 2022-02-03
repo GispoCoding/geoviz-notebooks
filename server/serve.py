@@ -153,9 +153,13 @@ def home():
     if form.validate_on_submit():
         save_apikeys(form)
         city_name = form.bbox.form.city.data
-        gtfs_urls = " ".join(form.gtfs_urls.data)
+
+        # Starting from WTForms 3.0, empty string fields are None.
+        # Also, we don't want to run import with empty urls anyway:
+        gtfs_urls = " ".join([url for url in form.gtfs_urls.data if url])
         bbox_string = " ".join(form.bbox.form.bbox.data.split(","))
         dataset_string = " ".join(form.dataset_selection.data)
+
         # this should be safe, as shell injections are not possible with Popen
         # and Flask has sanitized the field inputs?
         process = subprocess.Popen([
