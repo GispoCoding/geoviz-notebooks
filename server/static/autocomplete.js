@@ -2,7 +2,7 @@ const bboxCity = document.getElementById('bbox-city')
 
 if (bboxCity) {
     var autocomplete = new kt.OsmNamesAutocomplete(
-        'bbox-city', osmnamesUrl);
+        'bbox-city', "/");
 
     autocomplete.registerCallback(function (item) {
         // Component callback may fire even when something else on the form is changed, go figure.
