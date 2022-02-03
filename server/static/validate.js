@@ -76,6 +76,12 @@ function checkGtfsUrls () {
     removeError(gtfsForm)
     if (gtfsCheckbox.checked) {
         try {
+            // At least one URL must be present
+            if (![...gtfsFields].some(
+                (field) => (field.value && field.value.length > 0)
+            )) {
+                throw 'Must have one non-empty URL!'
+            }
             gtfsFields.forEach(
                 (field) => {
                     if (field.value) {
@@ -90,7 +96,7 @@ function checkGtfsUrls () {
             )
         }
         catch (error) {
-            addError(gtfsForm, "GTFS URL must point to a .zip file and cannot be empty.")
+            addError(gtfsForm, "You must give at least one GTFS URL (pointing to a .zip file) to run GTFS analysis.")
         }
     }
 }
