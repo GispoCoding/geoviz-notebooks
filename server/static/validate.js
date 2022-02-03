@@ -78,11 +78,13 @@ function checkGtfsUrls () {
         try {
             gtfsFields.forEach(
                 (field) => {
-                    // check URL validity
-                    new URL(field.value)
-                    // Check file type. Accept transitfeed download URLs too.
-                    if (!field.value.endsWith(".zip") && !field.value.endsWith("download")) {
-                        throw 'File must be .zip!'
+                    if (field.value) {
+                        // check URL validity
+                        new URL(field.value)
+                        // Check file type. Accept transitfeed download URLs too.
+                        if (!field.value.endsWith(".zip") && !field.value.endsWith("download")) {
+                            throw 'File must be .zip!'
+                        }
                     }
                 }
             )
