@@ -4,6 +4,7 @@ from logging import Logger
 import sys
 
 import osmnx as ox
+from geopandas import GeoDataFrame
 from ipygis import get_connection_url
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
@@ -59,17 +60,21 @@ class OsmImporter(object):
         self.logger.info(f"Found {pois.shape[0]} POIs, processing...")
 
         pois = pois.to_crs(epsg=3035)
+        # convert non-nodes to nodes
         pois.geometry = pois.centroid
         pois = pois.to_crs(epsg=4326)
 
         pois = pois.reset_index()
-        tag_columns = list(pois.columns)
-        tag_columns.remove("osmid")
-        tag_columns.remove("geometry")
 
+        # we have to make sure columns don't exist before renaming
+        pois.drop(labels=["node_id", "geom"], axis=1, errors='ignore', inplace=True)
+        # TODO: this saves also way ids and relation ids as node ids!!
         pois = pois.rename(columns={"osmid": "node_id"})
         pois = pois.rename(columns={"geometry": "geom"})
         pois = pois.set_index("node_id")
+        # node_id is no longer a column, it's the index
+        tag_columns = list(pois.columns)
+        tag_columns.remove("geom")
         pois["geom"] = pois["geom"].apply(lambda geom: WKTElement(geom.wkt, srid=4326))
 
         pois["tags"] = [row.dropna().to_json()
@@ -91,7 +96,7 @@ class OsmImporter(object):
         OSMPoint.__table__.drop(self._engine, checkfirst=True)
         OSMPoint.__table__.create(self._engine)
 
-    def _get_amenities(self):
+    def _get_amenities(self) -> GeoDataFrame:
         (minx, miny, maxx, maxy) = self.bbox
         return ox.geometries.geometries_from_bbox(maxy, miny, maxx, minx, tags=tags_to_filter)
 
