@@ -35,6 +35,8 @@ GTFS_DATASETS = {
     "Vienna": "http://www.wienerlinien.at/ogd_realtime/doku/ogd/gtfs/gtfs.zip",
     "Gdańsk": "https://mkuran.pl/gtfs/tristar.zip",
     "Wrocław": "https://www.wroclaw.pl/open-data/87b09b32-f076-4475-8ec9-6020ed1f9ac0/OtwartyWroclaw_rozklad_jazdy_GTFS.zip",
+    "London": "https://storage.googleapis.com/teleport-gtfs/tflgtfs_nobus.zip",
+    "Greater Manchester": "https://odata.tfgm.com/opendata/downloads/TfGMgtfsnew.zip",
 }
 
 DATA_PATH = "data"
