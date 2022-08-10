@@ -110,6 +110,12 @@ def gtfs_url_for_city(city):
     return ('', 404)
 
 
+# no login needed as long as we don't serve data from db
+@app.route('/autocomplete_url')
+def autocomplete_url():
+    return {'url': os.getenv("OSMNAMES_URL")}
+
+
 @app.route('/analyses/<string:city>', methods=["GET", "DELETE"])
 @auth.login_required
 def analysis_for_city(city):

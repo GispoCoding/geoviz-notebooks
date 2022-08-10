@@ -2,7 +2,6 @@ services:
   osmnames:
     image: klokantech/osmnames-sphinxsearch
     container_name: osmnames
-
   flask:
     image: gispo/geoviz-server
     container_name: flask
@@ -27,13 +26,21 @@ services:
       - USERNAME
       - PASSWORD_HASH
 
+  dev-osmnames:
+    image: klokantech/osmnames-sphinxsearch
+    container_name: dev-osmnames
+    ports:
+      - "5001:80"
   dev:
-    image: gispo/geoviz-server
+    image: gispo/geoviz-server:dev
+    build:
+      context: .
+      target: geoviz-server
     container_name: dev-flask
     volumes:
       - .:/app
     depends_on:
-      - osmnames
+      - dev-osmnames
       - postgis
     ports:
       - "5000:5000"
@@ -45,7 +52,7 @@ services:
       - FLICKR_API_KEY
       - FLICKR_SECRET
       - OSM_EXTRACTS_API_KEY
-      - OSMNAMES_URL
+      - OSMNAMES_URL=http://localhost:5001
       - SECRET_KEY
       - USERNAME
       - PASSWORD_HASH
