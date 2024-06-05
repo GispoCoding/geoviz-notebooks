@@ -57,8 +57,9 @@ FROM common AS geoviz-server
 COPY server/requirements-serve.txt /tmp/
 RUN pip install --no-cache-dir -r /tmp/requirements-serve.txt
 
-# For flask server, looks like pip install uwsgi fails for some reason
-RUN conda install uwsgi
+# For flask server, looks like 'pip install uwsgi' fails for some reason
+# and 'conda install uwsgi' hangs forever
+RUN apt-get update && apt-get install -y --no-install-recommends uwsgi
 
 COPY . /app
 WORKDIR /app

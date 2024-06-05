@@ -6,20 +6,28 @@ geoalchemy2
 git+https://github.com/GispoCoding/gtfs_functions.git
 h3
 jupyterlab
-osmnx
 # use our own pandana fork until https://github.com/UDST/pandana/issues/170 is resolved
 git+https://github.com/GispoCoding/pandana.git
-pandas
 psycopg2-binary
 pyshp
 python-dotenv
 python-slugify
 requests
-sqlalchemy>1.4
-sqlalchemy-utils
 
 # Our GIS tools
-git+https://github.com/GispoCoding/ipygis.git@0.2.0
+git+https://github.com/GispoCoding/ipygis.git@0.2.1
 
 # GISPO style
 git+https://github.com/GispoCoding/jupyter-themes.git
+
+# Hold these back to 2021 levels for now
+Jinja2==3.1.2
+Werkzeug==2.2.2
+Shapely==1.8.2
+SQLAlchemy==1.4.40
+SQLAlchemy-Utils==0.38.3
+osmnx==1.2.2
+libpysal==4.6.2
+ipython-sql==0.4.1
+pandas==1.4.3
+Fiona==1.8.21
