@@ -4,9 +4,6 @@ services:
     container_name: osmnames
   flask:
     image: gispo/geoviz-server
-    build:
-      context: .
-      target: geoviz-server
     container_name: flask
     volumes:
       - /tmp/flask:/tmp/flask
@@ -36,9 +33,9 @@ services:
       - "5001:80"
   dev:
     image: gispo/geoviz-server:dev
-    #build:
-    #  context: .
-    #  target: geoviz-server
+    build:
+      context: .
+      target: geoviz-server
     container_name: dev-flask
     volumes:
       - .:/app
