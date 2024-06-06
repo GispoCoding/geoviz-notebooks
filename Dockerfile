@@ -59,7 +59,7 @@ RUN pip install --no-cache-dir -r /tmp/requirements-serve.txt
 
 # For flask server, looks like 'pip install uwsgi' fails for some reason
 # and 'conda install uwsgi' hangs forever
-RUN apt-get update && apt-get install -y --no-install-recommends uwsgi
+RUN apt-get update && apt-get install -y --no-install-recommends uwsgi uwsgi-plugin-python3
 
 COPY . /app
 WORKDIR /app
